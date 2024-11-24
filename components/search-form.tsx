@@ -4,12 +4,13 @@ import { Search } from "lucide-react"
 
 export function SearchForm({ className }: React.HTMLAttributes<HTMLFormElement>) {
   return (
-    <form className={className}>
+    <form action={"/search"} className={className}>
       <div className="flex items-center space-x-2">
         <Input
           type="search"
           placeholder="What are you looking for?"
           className="flex-1"
+          name="q"
         />
         <Button type="submit" size="sm">
           <Search className="h-4 w-4" />

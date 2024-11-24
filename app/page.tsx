@@ -63,13 +63,14 @@ export default function Home() {
             <section>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-1 text-app_red">This Month</h3>
-                  <h2 className="text-2xl font-bold">Best Selling Products</h2>
+                  <h3 className="text-lg font-semibold mb-1">This Month</h3>
+                  <h2 className="text-2xl font-bold text-app_red">Best Selling Products</h2>
                 </div>
                 <Button className="bg-app_red hover:bg-red-600">View All</Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map((item) => (
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((item, index) => (
+                  <Link href={`/product/${index}`} key={item} className="group">
                   <Card key={item}>
                     <CardContent className="p-0">
                       <div className="relative aspect-square">
@@ -96,6 +97,7 @@ export default function Home() {
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -106,14 +108,14 @@ export default function Home() {
                 <div className="text-white space-y-4">
                   <span className="text-app_red">Categories</span>
                   <h2 className="text-4xl font-bold">Enhance Your<br />Music Experience</h2>
-                  <div className="flex gap-8">
+                  <div className="flex gap-4 lg:gap-8">
                     {[
                       { value: '23', label: 'Hours' },
                       { value: '05', label: 'Days' },
                       { value: '59', label: 'Minutes' },
                       { value: '35', label: 'Seconds' },
                     ].map((item) => (
-                      <div key={item.label} className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center">
+                      <div key={item.label} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white text-black flex items-center justify-center">
                         <div className="text-center">
                           <div className="text-sm font-bold">{item.value}</div>
                           <div className="text-xs">{item.label}</div>
@@ -137,19 +139,14 @@ export default function Home() {
             <section>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-primary font-semibold mb-1">Our Products</h3>
-                  <h2 className="text-2xl font-bold">Explore Our Products</h2>
+                  <h3 className="text-primary font-semibold mb-1 ">Our Products</h3>
+                  <h2 className="text-2xl font-bold text-app_red">Explore Our Products</h2>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon">
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon">
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[
                   { name: "Gaming Console", price: "$99.99", rating: 5 },
                   { name: "DSLR Camera", price: "$699.99", rating: 4 },
@@ -160,43 +157,45 @@ export default function Home() {
                   { name: "Game Controller", price: "$59.99", rating: 5 },
                   { name: "Winter Jacket", price: "$129.99", rating: 4 },
                 ].map((product, index) => (
-                  <Card key={index}>
-                    <CardContent className="p-0">
-                      <div className="relative aspect-square">
-                        <Image
-                          src="/placeholder.svg"
-                          alt={product.name}
-                          fill
-                          className="object-cover rounded-t-lg"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                        >
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 left-2 h-8 w-8 rounded-full"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold truncate">{product.name}</h3>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-primary font-bold text-app_red">{product.price}</span>
+                  <Link href={`/product/${index}`} key={index}>
+                    <Card key={index}>
+                      <CardContent className="p-0">
+                        <div className="relative aspect-square">
+                          <Image
+                            src="/placeholder.svg"
+                            alt={product.name}
+                            fill
+                            className="object-cover rounded-t-lg"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                          >
+                            <Heart className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 left-2 h-8 w-8 rounded-full"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <div className="flex items-center gap-1 mt-2">
-                          {Array(product.rating).fill(null).map((_, i) => (
-                            <Star key={i} className="h-4 w-4 fill-orange-500 text-orange-400 text-primary" />
-                          ))}
+                        <div className="p-4">
+                          <h3 className="font-semibold truncate">{product.name}</h3>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-primary font-bold text-app_red">{product.price}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mt-2">
+                            {Array(product.rating).fill(null).map((_, i) => (
+                              <Star key={i} className="h-4 w-4 fill-orange-500 text-orange-400 text-primary" />
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             </section>

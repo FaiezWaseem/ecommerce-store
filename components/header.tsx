@@ -41,16 +41,18 @@ export default function Header(){
             </SheetContent>
           </Sheet>
           <Link href="/" className="ml-4 md:ml-0">
-            <h1 className="text-xl font-bold">Exclusive</h1>
+            <h1 className="text-xl font-bold">E-Shop</h1>
           </Link>
           <div className="flex items-center space-x-4 ml-auto">
             <SearchForm className="hidden md:flex" />
             <Button variant="ghost" size="icon">
               <Heart className="h-5 w-5" />
             </Button>
+            <Link href="/cart" className="relative">
             <Button variant="ghost" size="icon">
               <ShoppingCart className="h-5 w-5" />
             </Button>
+            </Link>
           </div>
         </div>
       </header>
