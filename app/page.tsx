@@ -32,15 +32,15 @@ export default function Home() {
             {/* Desktop Sidebar */}
             <aside className="hidden md:block">
               <nav className="space-y-2">
-                <Button variant="ghost" className="w-full justify-start">Women's Fashion</Button>
-                <Button variant="ghost" className="w-full justify-start">Men's Fashion</Button>
-                <Button variant="ghost" className="w-full justify-start">Electronics</Button>
-                <Button variant="ghost" className="w-full justify-start">Home & Lifestyle</Button>
-                <Button variant="ghost" className="w-full justify-start">Medicine</Button>
-                <Button variant="ghost" className="w-full justify-start">Sports & Outdoor</Button>
-                <Button variant="ghost" className="w-full justify-start">Baby's & Toys</Button>
-                <Button variant="ghost" className="w-full justify-start">Groceries & Pets</Button>
-                <Button variant="ghost" className="w-full justify-start">Health & Beauty</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Women's Fashion"}</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Men's Fashion"}</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Electronics"}</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Home & Lifestyle"}</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Medicine"}</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Sports & Outdoor"}</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Baby's & Toys"}</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Groceries & Pets"}</Button>
+                <Button variant="ghost" className="w-full justify-start">{"Health & Beauty"}</Button>
               </nav>
             </aside>
 
