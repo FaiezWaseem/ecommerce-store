@@ -1,113 +1,307 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Heart } from 'lucide-react'
+import Image from "next/image"
+import Link from "next/link"
+import { ChevronLeft, ChevronRight, Eye, Star, Truck, HeadphonesIcon, Shield } from 'lucide-react'
+import Header from "@/components/header"
+import Footer from "@/components/footer"
+import CrousalHero from "@/components/HomeScreen/crousal-hero"
+import Categories from "@/components/HomeScreen/categories"
+import FlashSale from "@/components/HomeScreen/flash-sale"
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="flex min-h-screen flex-col">
+      {/* Top Banner */}
+      <div className="bg-black text-white p-2 text-center text-sm">
+        Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%!{" "}
+        <Link href="#" className="underline">
+          ShopNow
+        </Link>
+      </div>
+
+      {/* Header */}
+      <Header />
+
+      <main className="flex-1">
+        <div className="container px-4 py-6 md:px-6 lg:px-8 max-w-full">
+          {/* Desktop Sidebar & Main Content Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
+            {/* Desktop Sidebar */}
+            <aside className="hidden md:block">
+              <nav className="space-y-2">
+                <Button variant="ghost" className="w-full justify-start">Women's Fashion</Button>
+                <Button variant="ghost" className="w-full justify-start">Men's Fashion</Button>
+                <Button variant="ghost" className="w-full justify-start">Electronics</Button>
+                <Button variant="ghost" className="w-full justify-start">Home & Lifestyle</Button>
+                <Button variant="ghost" className="w-full justify-start">Medicine</Button>
+                <Button variant="ghost" className="w-full justify-start">Sports & Outdoor</Button>
+                <Button variant="ghost" className="w-full justify-start">Baby's & Toys</Button>
+                <Button variant="ghost" className="w-full justify-start">Groceries & Pets</Button>
+                <Button variant="ghost" className="w-full justify-start">Health & Beauty</Button>
+              </nav>
+            </aside>
+
+            {/* Main Content */}
+            <div className="space-y-6">
+              {/* Hero Carousel */}
+              <CrousalHero />
+            </div>
+          </div>
+
+          {/* Full width sections */}
+          <div className="mt-6 space-y-6">
+            {/* Flash Sales */}
+            <FlashSale />
+
+            {/* Browse By Category */}
+            <Categories />
+
+            {/* Best Selling Products */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-1 text-app_red">This Month</h3>
+                  <h2 className="text-2xl font-bold">Best Selling Products</h2>
+                </div>
+                <Button className="bg-app_red hover:bg-red-600">View All</Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((item) => (
+                  <Card key={item}>
+                    <CardContent className="p-0">
+                      <div className="relative aspect-square">
+                        <Image
+                          src="/placeholder.svg"
+                          alt="Product"
+                          fill
+                          className="object-cover rounded-t-lg"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                        >
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold truncate text-app_red">The North Coat</h3>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-primary font-bold">$260</span>
+                          <span className="text-sm text-muted-foreground line-through">$360</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            {/* Enhance Your Music Experience */}
+            <section className="relative h-[400px] bg-black rounded-lg overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-between p-12">
+                <div className="text-white space-y-4">
+                  <span className="text-app_red">Categories</span>
+                  <h2 className="text-4xl font-bold">Enhance Your<br />Music Experience</h2>
+                  <div className="flex gap-8">
+                    {[
+                      { value: '23', label: 'Hours' },
+                      { value: '05', label: 'Days' },
+                      { value: '59', label: 'Minutes' },
+                      { value: '35', label: 'Seconds' },
+                    ].map((item) => (
+                      <div key={item.label} className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-sm font-bold">{item.value}</div>
+                          <div className="text-xs">{item.label}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Button className="bg-app_red hover:bg-red-600">Buy Now!</Button>
+                </div>
+                <Image
+                  src="/assets/images/JBL_BOOMBAX.png"
+                  alt="Speaker"
+                  width={400}
+                  height={400}
+                  className="hidden md:block"
+                />
+              </div>
+            </section>
+
+            {/* Explore Our Products */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-primary font-semibold mb-1">Our Products</h3>
+                  <h2 className="text-2xl font-bold">Explore Our Products</h2>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="icon">
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon">
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[
+                  { name: "Gaming Console", price: "$99.99", rating: 5 },
+                  { name: "DSLR Camera", price: "$699.99", rating: 4 },
+                  { name: "Gaming Laptop", price: "$999.99", rating: 5 },
+                  { name: "Running Shoes", price: "$79.99", rating: 4 },
+                  { name: "RC Car", price: "$49.99", rating: 5 },
+                  { name: "Sports Shoes", price: "$89.99", rating: 4 },
+                  { name: "Game Controller", price: "$59.99", rating: 5 },
+                  { name: "Winter Jacket", price: "$129.99", rating: 4 },
+                ].map((product, index) => (
+                  <Card key={index}>
+                    <CardContent className="p-0">
+                      <div className="relative aspect-square">
+                        <Image
+                          src="/placeholder.svg"
+                          alt={product.name}
+                          fill
+                          className="object-cover rounded-t-lg"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                        >
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 left-2 h-8 w-8 rounded-full"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold truncate">{product.name}</h3>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-primary font-bold text-app_red">{product.price}</span>
+                        </div>
+                        <div className="flex items-center gap-1 mt-2">
+                          {Array(product.rating).fill(null).map((_, i) => (
+                            <Star key={i} className="h-4 w-4 fill-orange-500 text-orange-400 text-primary" />
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            {/* New Arrival */}
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="relative h-[400px] bg-black rounded-lg overflow-hidden">
+                <div className="absolute z-10 inset-0 p-8 flex flex-col justify-center text-white">
+                  <h3 className="text-3xl font-bold mb-4">PlayStation 5</h3>
+                  <p className="mb-4">Black and White Version of PS5 Coming Out</p>
+                  <button className="flex items-center gap-4 text-color-text-1 bg-transparent text-white">
+                    <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
+                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path></svg>
+                  </button>
+                </div>
+                <Image
+                  src="/assets/images/ps5.png"
+                  alt="PS5"
+                  fill
+                  className="opacity-75"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="relative col-span-2 h-[185px] bg-black rounded-lg overflow-hidden">
+                  <div className="col-span-2 flex items-end p-10 rounded-sm bg-[url(/assets/images/women.png)] bg-color-bg-1 bg-no-repeat bg-contain bg-right   ">
+                    <div className="space-y-4">
+                      <div className="text-color-text-1 space-y-1">
+                        <p className="text-[26px] capitalize max-2xl:text-2xl  text-white">Women’s Collections</p>
+                        <p className="text-base max-2xl:text-sm text-white">Featured woman collections that give you another vibe.</p>
+                      </div>
+                      <button className="flex items-center gap-4 text-color-text-1 bg-transparent text-white">
+                        <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
+                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative h-[185px] bg-black rounded-lg overflow-hidden text-white ">
+                  <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
+                    <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
+                      src={'/assets/images/speaker.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
+                    <div className="space-y-4 absolute bottom-0 left-0 p-10">
+                      <div className="text-color-text-1 space-y-1">
+                        <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Speakers</p>
+                        <p className="text-base max-2xl:text-sm">Amazon wireless speakers</p></div>
+                      <button className="flex items-center gap-4 text-color-text-1 bg-transparent group __className_6dd009">
+                        <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
+                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative h-[185px] bg-black rounded-lg overflow-hidden text-white">
+                  <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
+                    <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
+                      src={'/assets/images/gucci-perfume.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
+                    <div className="space-y-4 absolute bottom-0 left-0 p-10">
+                      <div className="text-color-text-1 space-y-1">
+                        <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Perfume</p>
+                        <p className="text-base max-2xl:text-sm">GUCCI INTENSE OUD EDP</p></div>
+                      <button className="flex items-center gap-4 text-color-text-1 bg-transparent group __className_6dd009">
+                        <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
+                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Services */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Truck className="h-8 w-8" />
+                </div>
+                <h3 className="font-semibold mb-2">FREE AND FAST DELIVERY</h3>
+                <p className="text-sm text-muted-foreground">Free delivery for all orders over $140</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                  <HeadphonesIcon className="h-8 w-8" />
+                </div>
+                <h3 className="font-semibold mb-2">24/7 CUSTOMER SERVICE</h3>
+                <p className="text-sm text-muted-foreground">Friendly 24/7 customer support</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Shield className="h-8 w-8" />
+                </div>
+                <h3 className="font-semibold mb-2">MONEY BACK GUARANTEE</h3>
+                <p className="text-sm text-muted-foreground">We return money within 30 days</p>
+              </div>
+            </section>
+          </div>
         </div>
-      </div>
+      </main>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+      {/* Footer */}
+      <Footer />
+    </div>
+  )
 }
+
