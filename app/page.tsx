@@ -239,7 +239,7 @@ export default function Home() {
                   <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
                     <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
                       src={'/assets/images/speaker.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
-                    <div className="space-y-4 absolute bottom-0 left-0 p-10">
+                    <div className="space-y-4 absolute bottom-0 left-0 p-4 lg:p-10">
                       <div className="text-color-text-1 space-y-1">
                         <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Speakers</p>
                         <p className="text-base max-2xl:text-sm">Amazon wireless speakers</p></div>
@@ -255,7 +255,7 @@ export default function Home() {
                   <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
                     <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
                       src={'/assets/images/gucci-perfume.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
-                    <div className="space-y-4 absolute bottom-0 left-0 p-10">
+                    <div className="space-y-4 absolute bottom-0 left-0 p-4 lg:p-10">
                       <div className="text-color-text-1 space-y-1">
                         <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Perfume</p>
                         <p className="text-base max-2xl:text-sm">GUCCI INTENSE OUD EDP</p></div>
