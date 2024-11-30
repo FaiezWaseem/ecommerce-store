@@ -166,7 +166,7 @@ export default function ImageGallery() {
                   <DialogHeader>
                     <DialogTitle>Image Gallery</DialogTitle>
                     <DialogDescription>
-                      Drag and drop images, paste a link, or select from existing images.
+                      Drag and drop images, paste a link, or select from existing images.{""}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="flex-grow flex flex-col md:flex-row gap-4 overflow-hidden">
@@ -178,7 +178,7 @@ export default function ImageGallery() {
                         }`}
                       >
                         <input {...getInputProps()} />
-                        <p>Drag 'n' drop some files here, or click to select files</p>
+                        <p>{"Drag 'n' drop some files here, or click to select files"}</p>
                       </div>
                       <div className="flex gap-2">
                         <Input

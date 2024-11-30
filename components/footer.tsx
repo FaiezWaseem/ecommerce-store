@@ -39,7 +39,7 @@ export default function Footer(){
               <h2 className="text-xl font-bold">Account</h2>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/account">My Account</Link></li>
-                <li><Link href="#">Login / Register</Link></li>
+                <li><Link href="/login">Login / Register</Link></li>
                 <li><Link href="/cart">Cart</Link></li>
                 <li><Link href="#">Wishlist</Link></li>
                 <li><Link href="/search">Shop</Link></li>
