@@ -10,6 +10,7 @@ import Footer from "@/components/footer"
 import CrousalHero from "@/components/HomeScreen/crousal-hero"
 import Categories from "@/components/HomeScreen/categories"
 import FlashSale from "@/components/HomeScreen/flash-sale"
+import { products } from "./constants"
 
 export default function Home() {
   return (
@@ -56,6 +57,12 @@ export default function Home() {
             {/* Flash Sales */}
             <FlashSale />
 
+            <div className="w-full">
+              <img src="./assets/banner/Orange and White Modern Furniture Promo Mobile Banner Ads.png" 
+               className="w-full"
+              alt="Orange and White Modern Furniture Promo Mobile Banner Ads" />
+            </div>
+        
             {/* Browse By Category */}
             <Categories />
 
@@ -69,13 +76,13 @@ export default function Home() {
                 <Button className="bg-app_red hover:bg-red-600">View All</Button>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map((item, index) => (
-                  <Link href={`/product/${index}`} key={item} className="group">
-                  <Card key={item}>
+                {products.map((item, index) => (
+                  <Link href={`/product/${item.title}-${index}`} key={item.title} className="group">
+                  <Card key={item.title} className="group-hover:shadow-lg transition-shadow duration-300">
                     <CardContent className="p-0">
                       <div className="relative aspect-square">
                         <Image
-                          src="/placeholder.svg"
+                          src={item.image}
                           alt="Product"
                           fill
                           className="object-cover rounded-t-lg"
@@ -89,10 +96,10 @@ export default function Home() {
                         </Button>
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold truncate text-app_red">The North Coat</h3>
+                        <h3 className="font-semibold truncate text-app_red">{item.title}</h3>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-primary font-bold">$260</span>
-                          <span className="text-sm text-muted-foreground line-through">$360</span>
+                          <span className="text-primary font-bold">${item.sale_price}</span>
+                          <span className="text-sm text-muted-foreground line-through">${item.price}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -199,6 +206,12 @@ export default function Home() {
                 ))}
               </div>
             </section>
+            
+            <div className="w-full">
+              <img src="./assets/banner/BlESSED.png" 
+               className="w-full"
+              alt="BlESSED.png" />
+            </div>
 
             {/* New Arrival */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6">

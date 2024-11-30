@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Heart } from 'lucide-react';
 import Image from "next/image";
+import { products } from "@/app/constants";
 
 export default function FlashSale() {
     const [timeLeft, setTimeLeft] = useState({
@@ -40,45 +41,7 @@ export default function FlashSale() {
         return () => clearInterval(timer);
     }, []);
 
-    const products = [
-        {
-            title: 'G92 GamePad',
-            image: '/assets/images/G92_GamePad.png',
-            sale_price: '120',
-            price: '150',
-        },
-        {
-            title: 'Gucci Bag',
-            image: '/assets/images/gucci-bag.png',
-            sale_price: '340',
-            price: '480',
-        },
-        {
-            title: 'LCD Gaming Monitor',
-            image: '/assets/images/lcd_gamming_monitor.png',
-            sale_price: '299',
-            price: '400',
-        },
-        {
-            title: 'Bricks Chair',
-            image: '/assets/images/chair.png',
-            sale_price: '89',
-            price: '100',
-        },
-        {
-            title: 'G92 GamePad',
-            image: '/assets/images/G92_GamePad.png',
-            sale_price: '120',
-            price: '150',
-        },
-        {
-            title: 'Gucci Bag',
-            image: '/assets/images/gucci-bag.png',
-            sale_price: '340',
-            price: '480',
-        },
-    ];
-
+ 
     return (
         <section className="mt-6">
             <div className="flex items-center justify-between mb-6">

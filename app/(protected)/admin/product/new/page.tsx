@@ -5,7 +5,7 @@ import {
     ChevronLeft,
 
     Search,
-
+    Upload,
     X,
     Plus
 } from "lucide-react"
@@ -505,6 +505,46 @@ export default function AddProduct() {
                                                 </button>
                                             </div>
                                         </div> */}
+                                    </CardContent>
+                                </Card>
+                                <Card x-chunk="dashboard-07-chunk-5">
+                                    <CardHeader>
+                                        <CardTitle>Featured Video</CardTitle>
+                                        <CardDescription>
+                                            Select A Video for product
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-2">
+                                            <Label>Featured Video</Label>
+                                            <div className="space-y-2">
+                                                <RadioGroup defaultValue="upload" onValueChange={(value) => setFeaturedVideoType(value as 'upload' | 'link')}>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="upload" id="video-upload" />
+                                                        <Label htmlFor="video-upload">Upload Video</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="link" id="video-link" />
+                                                        <Label htmlFor="video-link">Video Link</Label>
+                                                    </div>
+                                                </RadioGroup>
+                                            </div>
+                                            {featuredVideoType === 'upload' ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <Input id="video-file" type="file" accept="video/*" className="flex-1" />
+                                                    <Button type="button" size="icon">
+                                                        <Upload className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <Input
+                                                    type="url"
+                                                    placeholder="Enter YouTube, Facebook, or Vimeo URL"
+                                                    value={featuredVideoLink}
+                                                    onChange={(e) => setFeaturedVideoLink(e.target.value)}
+                                                />
+                                            )}
+                                        </div>
                                     </CardContent>
                                 </Card>
                                 <Card x-chunk="dashboard-07-chunk-5">

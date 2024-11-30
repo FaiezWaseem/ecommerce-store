@@ -48,7 +48,7 @@ export default function Footer(){
             <div className="space-y-4">
               <h2 className="text-xl font-bold">Quick Link</h2>
               <ul className="space-y-2 text-sm">
-                <li><Link href="#">Privacy Policy</Link></li>
+                <li><Link href="/privacy-policy">Privacy Policy</Link></li>
                 <li><Link href="#">Terms Of Use</Link></li>
                 <li><Link href="#">FAQ</Link></li>
                 <li><Link href="#">Contact</Link></li>
