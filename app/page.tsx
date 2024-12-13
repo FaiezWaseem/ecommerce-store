@@ -26,7 +26,7 @@ export default function Home() {
       {/* Header */}
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 container">
         <div className="container px-4 py-6 md:px-6 lg:px-8 max-w-full">
           {/* Desktop Sidebar & Main Content Layout */}
           <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
