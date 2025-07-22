@@ -188,11 +188,11 @@ export default function FlashSale() {
                                                 <h3 className="font-semibold truncate">{item.product.name}</h3>
                                                 <div className="flex items-center gap-2 mt-2">
                                                     <span className="text-primary font-bold">
-                                                        ${item.product.salePrice || item.product.regularPrice}
+                                                        Rs {Number(item.product.salePrice) === 0 ? item.product.regularPrice : (item.product.salePrice || item.product.regularPrice)}
                                                     </span>
-                                                    {item.product.salePrice && (
+                                                    {item.product.salePrice && Number(item.product.salePrice) !== 0 && (
                                                         <span className="text-sm text-muted-foreground line-through">
-                                                            ${item.product.regularPrice}
+                                                            Rs {item.product.regularPrice}
                                                         </span>
                                                     )}
                                                 </div>

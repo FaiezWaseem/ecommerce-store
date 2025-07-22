@@ -10,7 +10,7 @@ const createProductSchema = z.object({
   shortDescription: z.string().optional(),
   sku: z.string().optional(),
   regularPrice: z.number().positive('Regular price must be positive'),
-  salePrice: z.number().positive().optional(),
+  salePrice: z.number().nonnegative().optional().nullable(),
   categoryId: z.string().optional(),
   status: z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']).default('DRAFT'),
   stockStatus: z.enum(['IN_STOCK', 'OUT_OF_STOCK', 'ON_BACKORDER']).default('IN_STOCK'),
@@ -20,8 +20,8 @@ const createProductSchema = z.object({
   isFeatured: z.boolean().default(false),
   enableReviews: z.boolean().default(true),
   featuredVideoType: z.enum(['UPLOAD', 'LINK']).default('UPLOAD').optional(),
-  featuredVideoLink: z.string().optional(),
-  featuredVideoFile: z.string().optional(),
+  featuredVideoLink: z.string().optional().nullable().or(z.literal('')),
+  featuredVideoFile: z.string().optional().nullable().or(z.literal('')),
   images: z.array(z.object({
     url: z.string(),
     alt: z.string().optional(),
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation failed', details: error.message },
+        { error: 'Validation failed', details: error.format() },
         { status: 400 }
       );
     }

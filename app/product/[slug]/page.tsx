@@ -242,10 +242,10 @@ export default function ProductPage({ params }: ProductPageProps) {
 
     // Format price
     const formatPrice = (price: number) => `Rs ${price || ''}`
-    const currentPrice = product.salePrice || product.regularPrice
-    const hasDiscount = product.salePrice && product.salePrice < product.regularPrice
+    const currentPrice = Number(product.salePrice) || Number(product.regularPrice)
+    const hasDiscount = Number(product.salePrice) > 0 && Number(product.salePrice) < Number(product.regularPrice)
     const discountPercent = hasDiscount
-        ? Math.round(((product.regularPrice - currentPrice) / product.regularPrice) * 100)
+        ? Math.round(((Number(product.regularPrice) - currentPrice) / Number(product.regularPrice)) * 100)
         : 0
 
     // Generate structured data for SEO
@@ -599,16 +599,12 @@ export default function ProductPage({ params }: ProductPageProps) {
                                     ) : (
                                         <>
                                             <ShoppingCart className="h-4 w-4" />
-                                            Add to Cart
+                                            
+                                            {product.stockStatus === 'OUT_OF_STOCK' ? 'Out of Stock' : 'Add to Cart'}
                                         </>
                                     )}
                                 </Button>
-                                <Button
-                                    className="px-8 py-3 font-semibold"
-                                    disabled={product.stockStatus === 'OUT_OF_STOCK'}
-                                >
-                                    {product.stockStatus === 'OUT_OF_STOCK' ? 'Out of Stock' : 'Buy Now'}
-                                </Button>
+                             
                             </div>
                         </div>
                     </div>
@@ -642,7 +638,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                         <button
                             onClick={addToCart}
                             disabled={product.stockStatus === 'OUT_OF_STOCK' || isAddingToCart}
-                            className={`px-3 py-3 rounded-md font-semibold flex items-center gap-1 ${product.stockStatus === 'OUT_OF_STOCK' || isAddingToCart
+                            className={`flex-1 px-3 py-3 rounded-md font-semibold flex items-center gap-1 ${product.stockStatus === 'OUT_OF_STOCK' || isAddingToCart
                                     ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                                     : 'bg-gray-100 text-gray-800 border border-gray-300'
                                 }`}
@@ -650,12 +646,15 @@ export default function ProductPage({ params }: ProductPageProps) {
                             {isAddingToCart ? (
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
                             ) : (
+                                <div className='flex flex-1 justify-evenly items-center'>
                                 <ShoppingCart className="h-4 w-4" />
+                                {product.stockStatus === 'OUT_OF_STOCK' ? 'Out of Stock' : 'Add To Cart'}
+                                </div>
                             )}
                         </button>
 
                         {/* Buy Button */}
-                        <button
+                        {/* <button
                             className={`flex-1 px-4 py-3 rounded-md font-semibold ${product.stockStatus === 'OUT_OF_STOCK'
                                     ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                                     : 'bg-primary text-white'
@@ -663,7 +662,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                             disabled={product.stockStatus === 'OUT_OF_STOCK'}
                         >
                             {product.stockStatus === 'OUT_OF_STOCK' ? 'Out of Stock' : 'Buy Now'}
-                        </button>
+                        </button> */}
 
                         {/* Wishlist */}
                         <button className="p-2 border border-gray-300 rounded-full bg-white">
