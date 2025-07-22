@@ -13,6 +13,8 @@ export async function POST(request: NextRequest) {
     
     // Validate input
     const validatedData = loginSchema.parse(body);
+
+    console.log("[LOG][AUTH][LOGIN]", JSON.stringify(validatedData , null , 4))
     
     // Authenticate user
     const user = await authenticateUser(validatedData.email, validatedData.password);
@@ -51,13 +53,14 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('[LOG][AUTH][LOGIN][VALIDATION]', error.message);
       return NextResponse.json(
         { error: 'Validation failed', details: error.message },
         { status: 400 }
       );
     }
     
-    console.error('Login error:', error);
+    console.error('[LOG][AUTH][LOGIN][ERROR]', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
