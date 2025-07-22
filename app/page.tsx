@@ -133,7 +133,7 @@ async function getHomePageData(): Promise<HomePageData> {
 
 export default async function Home() {
   const homeData = await getHomePageData()
-  const { settings  , carouselBanners  , categories , bestSellingProducts } = homeData
+  const { settings, carouselBanners, categories, bestSellingProducts } = homeData
 
 
 
@@ -196,12 +196,55 @@ export default async function Home() {
             {/* Flash Sales */}
             {settings.flashSaleEnabled && <FlashSale />}
 
-            <div className="w-full">
-              <img src="./assets/banner/Orange and White Modern Furniture Promo Mobile Banner Ads.png" 
-               className="w-full"
-              alt="Orange and White Modern Furniture Promo Mobile Banner Ads" />
-            </div>
-        
+            {/* TOP Promotional Banner */}
+            {homeData.promotionalBanners && homeData.promotionalBanners.filter(banner => banner.position === 'TOP').length > 0 && (
+              <div className="w-full my-4">
+                {(() => {
+                  // Get the first TOP banner
+                  const banner = homeData.promotionalBanners
+                    .filter(banner => banner.position === 'TOP')[0];
+
+                  return (
+                    <div key={banner.id} className="w-full relative rounded-lg overflow-hidden">
+                      {banner.link ? (
+                        <Link href={banner.link}>
+                          <Image
+                            src={banner.image}
+                            alt={banner.title}
+                            width={1200}
+                            height={300}
+                            className="w-full object-cover"
+                          />
+                          {banner.description && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
+                              <h3 className="text-xl font-bold">{banner.title}</h3>
+                              <p>{banner.description}</p>
+                            </div>
+                          )}
+                        </Link>
+                      ) : (
+                        <>
+                          <Image
+                            src={banner.image}
+                            alt={banner.title}
+                            width={1200}
+                            height={300}
+                            className="w-full object-cover"
+                          />
+                          {banner.description && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
+                              <h3 className="text-xl font-bold">{banner.title}</h3>
+                              <p>{banner.description}</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
             {/* Sale Banners */}
             {homeData.saleBanners && homeData.saleBanners.length > 0 && (
               <SaleBanner saleBanners={homeData.saleBanners} />
@@ -223,34 +266,38 @@ export default async function Home() {
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {(homeData.bestSellingProducts.length > 0 ? homeData.bestSellingProducts : products).map((item, index) => (
                     <Link href={`/product/${item.slug}`} key={item.title || item.name} className="group">
-                    <Card key={item.title || item.name} className="group-hover:shadow-lg transition-shadow duration-300">
-                      <CardContent className="p-0">
-                        <div className="relative aspect-square">
-                          <Image
-                            src={item.image || (item.images && item.images[0]?.url) || '/placeholder.svg'}
-                            alt="Product"
-                            fill
-                            className="object-cover rounded-t-lg"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                          >
-                            <Heart className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold truncate text-app_red">{item.title || item.name}</h3>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-primary font-bold">Rs {item.sale_price || item.salePrice || item.price}</span>
-                            {(item.price && item.sale_price && item.price !== item.sale_price) && (
-                              <span className="text-sm text-muted-foreground line-through">Rs {item.price}</span>
-                            )}
+                      <Card key={item.title || item.name} className="group-hover:shadow-lg transition-shadow duration-300">
+                        <CardContent className="p-0">
+                          <div className="relative aspect-square">
+                            <Image
+                              src={item.image || (item.images && item.images[0]?.url) || '/placeholder.svg'}
+                              alt="Product"
+                              fill
+                              className="object-cover rounded-t-lg"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                            >
+                              <Heart className="h-4 w-4" />
+                            </Button>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <div className="p-4">
+                            <h3 className="font-semibold truncate text-app_red">{item.title || item.name}</h3>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-primary font-bold">
+                                Rs {Number(item.salePrice) === 0 ? item.regularPrice : (item.salePrice || item.regularPrice)}
+                              </span>
+                              {item.salePrice && Number(item.salePrice) !== 0 && (
+                                <span className="text-sm text-muted-foreground line-through">
+                                  Rs {item.regularPrice}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </Link>
                   ))}
                 </div>
@@ -305,17 +352,8 @@ export default async function Home() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {(homeData.products.length > 0 ? homeData.products.slice(0, 8) : [
-                    { name: "Gaming Console", price: "Rs 99.99", rating: 5 },
-                    { name: "DSLR Camera", price: "Rs 699.99", rating: 4 },
-                    { name: "Gaming Laptop", price: "Rs 999.99", rating: 5 },
-                    { name: "Running Shoes", price: "Rs 79.99", rating: 4 },
-                    { name: "RC Car", price: "Rs 49.99", rating: 5 },
-                    { name: "Sports Shoes", price: "Rs 89.99", rating: 4 },
-                    { name: "Game Controller", price: "Rs 59.99", rating: 5 },
-                    { name: "Winter Jacket", price: "Rs 129.99", rating: 4 },
-                  ]).map((product, index) => (
-                    <Link href={`/product/${product.id || index}`} key={product.id || index}>
+                  {(homeData.products.length > 0 ? homeData.products.slice(0, 8) : []).map((product, index) => (
+                    <Link href={`/product/${product.slug}`} key={product.id || index}>
                       <Card key={product.id || index}>
                         <CardContent className="p-0">
                           <div className="relative aspect-square">
@@ -365,110 +403,202 @@ export default async function Home() {
                 </div>
               </section>
             )}
-            
-            <div className="w-full">
-              <img src="./assets/banner/BlESSED.png" 
-               className="w-full"
-              alt="BlESSED.png" />
-            </div>
+
+            {/* MIDDLE Promotional Banner */}
+            {homeData.promotionalBanners && homeData.promotionalBanners.filter(banner => banner.position === 'MIDDLE').length > 0 && (
+              <div className="w-full my-4">
+                {(() => {
+                  // Get the first MIDDLE banner
+                  const banner = homeData.promotionalBanners
+                    .filter(banner => banner.position === 'MIDDLE')[0];
+
+                  return (
+                    <div key={banner.id} className="w-full relative rounded-lg overflow-hidden">
+                      {banner.link ? (
+                        <Link href={banner.link}>
+                          <Image
+                            src={banner.image}
+                            alt={banner.title}
+                            width={1200}
+                            height={300}
+                            className="w-full object-cover"
+                          />
+                          {banner.description && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
+                              <h3 className="text-xl font-bold">{banner.title}</h3>
+                              <p>{banner.description}</p>
+                            </div>
+                          )}
+                        </Link>
+                      ) : (
+                        <>
+                          <Image
+                            src={banner.image}
+                            alt={banner.title}
+                            width={1200}
+                            height={300}
+                            className="w-full object-cover"
+                          />
+                          {banner.description && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
+                              <h3 className="text-xl font-bold">{banner.title}</h3>
+                              <p>{banner.description}</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
 
             {/* New Arrival */}
             {settings.newArrivalEnabled && (
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="relative h-[400px] bg-black rounded-lg overflow-hidden">
-                <div className="absolute z-10 inset-0 p-8 flex flex-col justify-center text-white">
-                  <h3 className="text-3xl font-bold mb-4">PlayStation 5</h3>
-                  <p className="mb-4">Black and White Version of PS5 Coming Out</p>
-                  <button className="flex items-center gap-4 text-color-text-1 bg-transparent text-white">
-                    <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
-                    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path></svg>
-                  </button>
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="relative h-[400px] bg-black rounded-lg overflow-hidden">
+                  <div className="absolute z-10 inset-0 p-8 flex flex-col justify-center text-white">
+                    <h3 className="text-3xl font-bold mb-4">PlayStation 5</h3>
+                    <p className="mb-4">Black and White Version of PS5 Coming Out</p>
+                    <button className="flex items-center gap-4 text-color-text-1 bg-transparent text-white">
+                      <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
+                      <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path></svg>
+                    </button>
+                  </div>
+                  <Image
+                    src="/assets/images/ps5.png"
+                    alt="PS5"
+                    fill
+                    className="opacity-75"
+                  />
                 </div>
-                <Image
-                  src="/assets/images/ps5.png"
-                  alt="PS5"
-                  fill
-                  className="opacity-75"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="relative col-span-2 h-[185px] bg-black rounded-lg overflow-hidden">
-                  <div className="col-span-2 flex items-end p-10 rounded-sm bg-[url(/assets/images/women.png)] bg-color-bg-1 bg-no-repeat bg-contain bg-right   ">
-                    <div className="space-y-4">
-                      <div className="text-color-text-1 space-y-1">
-                        <p className="text-[26px] capitalize max-2xl:text-2xl  text-white">Women’s Collections</p>
-                        <p className="text-base max-2xl:text-sm text-white">Featured woman collections that give you another vibe.</p>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="relative col-span-2 h-[185px] bg-black rounded-lg overflow-hidden">
+                    <div className="col-span-2 flex items-end p-10 rounded-sm bg-[url(/assets/images/women.png)] bg-color-bg-1 bg-no-repeat bg-contain bg-right   ">
+                      <div className="space-y-4">
+                        <div className="text-color-text-1 space-y-1">
+                          <p className="text-[26px] capitalize max-2xl:text-2xl  text-white">Women’s Collections</p>
+                          <p className="text-base max-2xl:text-sm text-white">Featured woman collections that give you another vibe.</p>
+                        </div>
+                        <button className="flex items-center gap-4 text-color-text-1 bg-transparent text-white">
+                          <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
+                          <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path></svg>
+                        </button>
                       </div>
-                      <button className="flex items-center gap-4 text-color-text-1 bg-transparent text-white">
-                        <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
-                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path></svg>
-                      </button>
+                    </div>
+                  </div>
+                  <div className="relative h-[185px] bg-black rounded-lg overflow-hidden text-white ">
+                    <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
+                      <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
+                        src={'/assets/images/speaker.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
+                      <div className="space-y-4 absolute bottom-0 left-0 p-4 lg:p-10">
+                        <div className="text-color-text-1 space-y-1">
+                          <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Speakers</p>
+                          <p className="text-base max-2xl:text-sm">Amazon wireless speakers</p></div>
+                        <button className="flex items-center gap-4 text-color-text-1 bg-transparent group __className_6dd009">
+                          <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
+                          <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative h-[185px] bg-black rounded-lg overflow-hidden text-white">
+                    <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
+                      <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
+                        src={'/assets/images/gucci-perfume.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
+                      <div className="space-y-4 absolute bottom-0 left-0 p-4 lg:p-10">
+                        <div className="text-color-text-1 space-y-1">
+                          <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Perfume</p>
+                          <p className="text-base max-2xl:text-sm">GUCCI INTENSE OUD EDP</p></div>
+                        <button className="flex items-center gap-4 text-color-text-1 bg-transparent group __className_6dd009">
+                          <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
+                          <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="relative h-[185px] bg-black rounded-lg overflow-hidden text-white ">
-                  <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
-                    <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
-                      src={'/assets/images/speaker.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
-                    <div className="space-y-4 absolute bottom-0 left-0 p-4 lg:p-10">
-                      <div className="text-color-text-1 space-y-1">
-                        <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Speakers</p>
-                        <p className="text-base max-2xl:text-sm">Amazon wireless speakers</p></div>
-                      <button className="flex items-center gap-4 text-color-text-1 bg-transparent group __className_6dd009">
-                        <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
-                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                        </svg>
-                      </button>
+              </section>
+            )}
+
+            {/* BOTTOM Promotional Banners */}
+            {homeData.promotionalBanners && homeData.promotionalBanners.filter(banner => banner.position === 'BOTTOM').length > 0 && (
+              <div className="w-full my-6">
+                {(() => {
+                  // Get the first BOTTOM banner
+                  const banner = homeData.promotionalBanners
+                    .filter(banner => banner.position === 'BOTTOM')[0];
+
+                  return (
+                    <div key={banner.id} className="w-full relative rounded-lg overflow-hidden">
+                      {banner.link ? (
+                        <Link href={banner.link}>
+                          <Image
+                            src={banner.image}
+                            alt={banner.title}
+                            width={1200}
+                            height={300}
+                            className="w-full object-cover"
+                          />
+                          {banner.description && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
+                              <h3 className="text-xl font-bold">{banner.title}</h3>
+                              <p>{banner.description}</p>
+                            </div>
+                          )}
+                        </Link>
+                      ) : (
+                        <>
+                          <Image
+                            src={banner.image}
+                            alt={banner.title}
+                            width={1200}
+                            height={300}
+                            className="w-full object-cover"
+                          />
+                          {banner.description && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
+                              <h3 className="text-xl font-bold">{banner.title}</h3>
+                              <p>{banner.description}</p>
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
-                  </div>
-                </div>
-                <div className="relative h-[185px] bg-black rounded-lg overflow-hidden text-white">
-                  <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
-                    <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
-                      src={'/assets/images/gucci-perfume.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
-                    <div className="space-y-4 absolute bottom-0 left-0 p-4 lg:p-10">
-                      <div className="text-color-text-1 space-y-1">
-                        <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Perfume</p>
-                        <p className="text-base max-2xl:text-sm">GUCCI INTENSE OUD EDP</p></div>
-                      <button className="flex items-center gap-4 text-color-text-1 bg-transparent group __className_6dd009">
-                        <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
-                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
-            </section>
             )}
 
             {/* Services */}
             {settings.servicesEnabled && (
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Truck className="h-8 w-8" />
+              <section className="grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
+                <div className="flex flex-col items-center text-center">
+                  <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Truck className="h-8 w-8" />
+                  </div>
+                  <h3 className="font-semibold mb-2">FREE AND FAST DELIVERY</h3>
+                  <p className="text-sm text-muted-foreground">Free delivery for all orders over Rs 140</p>
                 </div>
-                <h3 className="font-semibold mb-2">FREE AND FAST DELIVERY</h3>
-                <p className="text-sm text-muted-foreground">Free delivery for all orders over Rs 140</p>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                  <HeadphonesIcon className="h-8 w-8" />
+                <div className="flex flex-col items-center text-center">
+                  <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <HeadphonesIcon className="h-8 w-8" />
+                  </div>
+                  <h3 className="font-semibold mb-2">24/7 CUSTOMER SERVICE</h3>
+                  <p className="text-sm text-muted-foreground">Friendly 24/7 customer support</p>
                 </div>
-                <h3 className="font-semibold mb-2">24/7 CUSTOMER SERVICE</h3>
-                <p className="text-sm text-muted-foreground">Friendly 24/7 customer support</p>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Shield className="h-8 w-8" />
+                <div className="flex flex-col items-center text-center">
+                  <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Shield className="h-8 w-8" />
+                  </div>
+                  <h3 className="font-semibold mb-2">MONEY BACK GUARANTEE</h3>
+                  <p className="text-sm text-muted-foreground">We return money within 30 days</p>
                 </div>
-                <h3 className="font-semibold mb-2">MONEY BACK GUARANTEE</h3>
-                <p className="text-sm text-muted-foreground">We return money within 30 days</p>
-              </div>
-            </section>
+              </section>
             )}
           </div>
         </div>

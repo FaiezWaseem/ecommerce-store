@@ -223,7 +223,7 @@ export default function OrdersPage() {
                               <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold">Rs {item.total.toFixed(2)}</p>
+                              <p className="font-semibold">Rs {item.total}</p>
                             </div>
                           </div>
                         ))}
@@ -241,16 +241,16 @@ export default function OrdersPage() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span>Subtotal</span>
-                          <span>Rs {order.subtotal.toFixed(2)}</span>
+                          <span>Rs {order.subtotal}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Shipping</span>
-                          <span>Rs {order.shippingAmount.toFixed(2)}</span>
+                          <span>Rs {order.shippingAmount}</span>
                         </div>
                         <div className="border-t pt-2">
                           <div className="flex justify-between font-semibold">
                             <span>Total</span>
-                            <span>Rs {order.totalAmount.toFixed(2)}</span>
+                            <span>Rs {order.totalAmount}</span>
                           </div>
                         </div>
                       </div>

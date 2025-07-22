@@ -199,6 +199,17 @@ export default function HomeSettingsPage() {
     position: 'CENTER' as 'LEFT' | 'CENTER' | 'RIGHT'
   })
 
+  const [promotionalForm, setPromotionalForm] = useState({
+    title: '',
+    description: '',
+    image: '',
+    link: '',
+    position: 'MIDDLE' as 'TOP' | 'MIDDLE' | 'BOTTOM' | 'SIDEBAR',
+    isActive: true,
+    startDate: '',
+    endDate: ''
+  })
+
   useEffect(() => {
     fetchData()
   }, [])
@@ -432,6 +443,81 @@ export default function HomeSettingsPage() {
       }
     } catch (error) {
       console.error('Error deleting banner:', error)
+      toast.error('Failed to delete banner')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSavePromotionalBanner = async (form : any) => {
+    try {
+      setSaving(true)
+
+
+
+      const bannerData = {
+        title: form.title,
+        description: form.description,
+        image: form.image,
+        link: form.link,
+        position: form.position,
+        isActive: form.isActive,
+        startDate: form.startDate ? new Date(form.startDate).toISOString() : null,
+        endDate: form.endDate ? new Date(form.endDate).toISOString() : null
+      }
+
+      const url = editingItem ? `/api/home-settings/promotional/${editingItem.id}` : '/api/home-settings/promotional'
+      const method = editingItem ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bannerData)
+      })
+
+      if (response.ok) {
+        toast.success(`Banner ${editingItem ? 'updated' : 'created'} successfully`)
+        setIsPromotionalModalOpen(false)
+        setEditingItem(null)
+        setPromotionalForm({
+          title: '',
+          description: '',
+          image: '',
+          link: '',
+          position: 'MIDDLE',
+          isActive: true,
+          startDate: '',
+          endDate: ''
+        })
+        fetchData() // Refresh the data
+      } else {
+        throw new Error(`Failed to ${editingItem ? 'update' : 'create'} banner`)
+      }
+    } catch (error) {
+      console.error('Error saving promotional banner:', error)
+      toast.error(`Failed to ${editingItem ? 'update' : 'create'} banner`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeletePromotionalBanner = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this banner?')) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/home-settings/promotional/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        toast.success('Banner deleted successfully')
+        fetchData() // Refresh the data
+      } else {
+        throw new Error('Failed to delete banner')
+      }
+    } catch (error) {
+      console.error('Error deleting promotional banner:', error)
       toast.error('Failed to delete banner')
     } finally {
       setSaving(false)
@@ -826,10 +912,105 @@ export default function HomeSettingsPage() {
         <TabsContent value="banners">
           <Card>
             <CardHeader>
-              <CardTitle>Promotional Banners</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  {/* <Image className="w-5 h-5" /> */}
+                  Promotional Banners
+                </CardTitle>
+                <Button onClick={() => {
+                  setPromotionalForm({
+                    title: '',
+                    description: '',
+                    image: '',
+                    link: '',
+                    position: 'MIDDLE',
+                    isActive: true,
+                    startDate: '',
+                    endDate: ''
+                  })
+                  setEditingItem(null)
+                  setIsPromotionalModalOpen(true)
+                }} className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="w-4 h-4 mr-2" /> Add Banner
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 dark:text-gray-400">Promotional banners management coming soon...</p>
+              {promotionalBanners.length === 0 ? (
+                <div className="text-center py-8">
+                  <ImageIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-600 dark:text-gray-400">No promotional banners found</p>
+                  <Button onClick={() => setIsPromotionalModalOpen(true)} variant="outline" className="mt-4">
+                    Create your first banner
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {promotionalBanners.map((banner) => (
+                    <Card key={banner.id} className="overflow-hidden">
+                      <div className="relative h-32">
+                        {banner.image && (
+                          <Image
+                            src={banner.image}
+                            alt={banner.title}
+                            fill
+                            className="object-cover"
+                          />
+                        )}
+                        <div className="absolute top-2 right-2 flex gap-1">
+                          <Badge variant={banner.isActive ? 'default' : 'secondary'} className="text-xs">
+                            {banner.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">{banner.title}</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Position: {banner.position}</p>
+                            {banner.startDate && (
+                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                                {new Date(banner.startDate).toLocaleDateString()} - 
+                                {banner.endDate ? new Date(banner.endDate).toLocaleDateString() : 'No end date'}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingItem(banner)
+                                setPromotionalForm({
+                                  title: banner.title,
+                                  description: banner.description || '',
+                                  image: banner.image || '',
+                                  link: banner.link || '',
+                                  position: banner.position,
+                                  isActive: banner.isActive,
+                                  startDate: banner.startDate ? new Date(banner.startDate).toISOString().slice(0, 10) : '',
+                                  endDate: banner.endDate ? new Date(banner.endDate).toISOString().slice(0, 10) : ''
+                                })
+                                setIsPromotionalModalOpen(true)
+                              }}
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDeletePromotionalBanner(banner.id)}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -1441,7 +1622,196 @@ export default function HomeSettingsPage() {
         onSave={handleSaveSaleBanner}
         editingItem={editingItem as SaleBanner | null}
       />
+      <PromotionalBannerModal
+        isOpen={isPromotionalModalOpen}
+        onClose={() => {
+          setIsPromotionalModalOpen(false)
+          setEditingItem(null)
+          // setPromotionalForm({
+          //   title: '',
+          //   description: '',
+          //   image: '',
+          //   link: '',
+          //   position: 'MIDDLE',
+          //   isActive: true,
+          //   startDate: '',
+          //   endDate: ''
+          // })
+        }}
+        editingItem={promotionalForm as PromotionalBanner}
+        onSave={handleSavePromotionalBanner}
+      />
     </div>
+  )
+}
+
+{/* Promotional Banner Modal */}
+const PromotionalBannerModal = ({ isOpen, onClose, editingItem, onSave }: {
+  isOpen: boolean
+  onClose: () => void
+  editingItem?: PromotionalBanner | null
+  onSave: (banner: any) => void
+}) => {
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    image: '',
+    link: '',
+    position: 'MIDDLE' as 'TOP' | 'MIDDLE' | 'BOTTOM' | 'SIDEBAR',
+    isActive: true,
+    startDate: '',
+    endDate: ''
+  })
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (editingItem) {
+      setForm({
+        title: editingItem.title,
+        description: editingItem.description || '',
+        image: editingItem.image || '',
+        link: editingItem.link || '',
+        position: editingItem.position,
+        isActive: editingItem.isActive,
+        startDate: editingItem.startDate ? new Date(editingItem.startDate).toISOString().slice(0, 16) : '',
+        endDate: editingItem.endDate ? new Date(editingItem.endDate).toISOString().slice(0, 16) : ''
+      })
+    }
+  }, [editingItem])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validate required fields
+    if (!form.title.trim()) {
+      toast.error('Title is required')
+      return
+    }
+    
+    if (!form.image.trim()) {
+      toast.error('Image URL is required')
+      return
+    }
+    
+    setSaving(true)
+    onSave(form)
+    setSaving(false)
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>{editingItem ? 'Edit' : 'Add'} Promotional Banner</DialogTitle>
+          <DialogDescription>
+            Create a promotional banner to display on your store.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={form.description || ''}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Enter banner description"
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input
+                id="image"
+                value={form.image || ''}
+                onChange={(e) => setForm({ ...form, image: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="link">Link URL</Label>
+              <Input
+                id="link"
+                value={form.link || ''}
+                onChange={(e) => setForm({ ...form, link: e.target.value })}
+                placeholder="/products/category"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="position">Position</Label>
+              <Select
+                value={form.position}
+                onValueChange={(value) => setForm({ ...form, position: value as 'TOP' | 'MIDDLE' | 'BOTTOM' | 'SIDEBAR' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TOP">Top</SelectItem>
+                  <SelectItem value="MIDDLE">Middle</SelectItem>
+                  <SelectItem value="BOTTOM">Bottom</SelectItem>
+                  <SelectItem value="SIDEBAR">Sidebar</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="isActive"
+                  checked={form.isActive}
+                  onCheckedChange={(checked) => setForm({ ...form, isActive: checked })}
+                />
+                <Label htmlFor="isActive">Active</Label>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="startDate">Start Date (Optional)</Label>
+              <Input
+                id="startDate"
+                type="datetime-local"
+                value={form.startDate || ''}
+                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="endDate">End Date (Optional)</Label>
+              <Input
+                id="endDate"
+                type="datetime-local"
+                value={form.endDate || ''}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? <Spinner size="sm" className="mr-2" /> : null}
+              {editingItem ? 'Update' : 'Create'} Banner
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
 
