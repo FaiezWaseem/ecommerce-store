@@ -1,61 +1,199 @@
+import { Metadata } from 'next'
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Heart } from 'lucide-react'
 import Image from "next/image"
-import Link from "next/link"
 import { ChevronLeft, ChevronRight, Eye, Star, Truck, HeadphonesIcon, Shield } from 'lucide-react'
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import CrousalHero from "@/components/HomeScreen/crousal-hero"
 import Categories from "@/components/HomeScreen/categories"
 import FlashSale from "@/components/HomeScreen/flash-sale"
+import ExploreProducts from "@/components/explore-products/explore-products"
 import { products } from "./constants"
 
-export default function Home() {
+// SEO Metadata
+export const metadata: Metadata = {
+  title: 'Home - Your Premium E-commerce Store',
+  description: 'Discover amazing products with great deals, flash sales, and new arrivals. Shop the best selection of electronics, fashion, and more with fast delivery.',
+  keywords: 'ecommerce, online shopping, electronics, fashion, deals, flash sale, new arrivals, best selling products',
+  openGraph: {
+    title: 'Home - Your Premium E-commerce Store',
+    description: 'Discover amazing products with great deals, flash sales, and new arrivals.',
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Your E-commerce Store'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Home - Your Premium E-commerce Store',
+    description: 'Discover amazing products with great deals, flash sales, and new arrivals.'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code',
+  },
+}
+
+interface HomePageData {
+  settings: {
+    topBannerEnabled: boolean
+    topBannerText: string
+    topBannerLink: string
+    topBannerLinkText: string
+    heroSectionEnabled: boolean
+    categoriesEnabled: boolean
+    flashSaleEnabled: boolean
+    bestSellingEnabled: boolean
+    featuredBannerEnabled: boolean
+    exploreProductsEnabled: boolean
+    newArrivalEnabled: boolean
+    servicesEnabled: boolean
+  }
+  carouselBanners: any[]
+  promotionalBanners: any[]
+  featuredSections: any[]
+  headlineMessages: any[]
+  saleBanners: any[]
+  categories: any[]
+  products: any[]
+  bestSellingProducts: any[]
+}
+
+async function getHomePageData(): Promise<HomePageData> {
+  try {
+    // Fetch homepage data and categories in parallel
+    const [homeResponse, categoriesResponse] = await Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/home-page`, {
+        cache: 'no-store'
+      }),
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/categories?isActive=true&limit=20`, {
+        cache: 'no-store'
+      })
+    ]);
+
+    if (!homeResponse.ok || !categoriesResponse.ok) {
+      throw new Error('Failed to fetch data');
+    }
+
+    const [homeData, categoriesData] = await Promise.all([
+      homeResponse.json(),
+      categoriesResponse.json()
+    ]);
+
+    console.log('Categories Data:', categoriesData);
+
+    return {
+      ...homeData,
+      categories: categoriesData.categories || []
+    };
+
+  } catch (error) {
+
+    console.error('Error fetching data:', error);
+    // Return fallback data with all sections enabled
+    return {
+      settings: {
+        topBannerEnabled: true,
+        topBannerText: 'Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%!',
+        topBannerLink: '/products',
+        topBannerLinkText: 'ShopNow',
+        heroSectionEnabled: true,
+        categoriesEnabled: true,
+        flashSaleEnabled: true,
+        bestSellingEnabled: true,
+        featuredBannerEnabled: true,
+        exploreProductsEnabled: true,
+        newArrivalEnabled: true,
+        servicesEnabled: true
+      },
+      carouselBanners: [],
+      promotionalBanners: [],
+      featuredSections: [],
+      headlineMessages: [],
+      saleBanners: [],
+      categories: [],
+      products: [],
+      bestSellingProducts: []
+    }
+  }
+}
+
+export default async function Home() {
+  const homeData = await getHomePageData()
+  const { settings } = homeData
+
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Top Banner */}
-      <div className="bg-black text-white p-2 text-center text-sm">
-        Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%!{" "}
-        <Link href="#" className="underline">
-          ShopNow
-        </Link>
-      </div>
+      {settings.topBannerEnabled && (
+        <div className="bg-black text-white p-2 text-center text-sm">
+          {settings.topBannerText}{" "}
+          <Link href={settings.topBannerLink} className="underline">
+            {settings.topBannerLinkText}
+          </Link>
+        </div>
+      )}
+
+      {/* Headline Messages */}
+      {homeData.headlineMessages.length > 0 && (
+        <div className="bg-red-500 text-white py-2 text-center">
+          <div className="container mx-auto px-4">
+            {homeData.headlineMessages.map((message: any) => (
+              <div key={message.id} className="text-sm font-medium">
+                {message.message}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <Header />
 
-      <main className="flex-1 container">
-        <div className="container px-4 py-6 md:px-6 lg:px-8 max-w-full">
+      <main className="flex-1 px-2 md:container lg:container">
+        <div className="container px-0 py-2 md:px-6 lg:px-8 max-w-full">
           {/* Desktop Sidebar & Main Content Layout */}
           <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
             {/* Desktop Sidebar */}
             <aside className="hidden md:block">
               <nav className="space-y-2">
-                <Button variant="ghost" className="w-full justify-start">{"Women's Fashion"}</Button>
-                <Button variant="ghost" className="w-full justify-start">{"Men's Fashion"}</Button>
-                <Button variant="ghost" className="w-full justify-start">{"Electronics"}</Button>
-                <Button variant="ghost" className="w-full justify-start">{"Home & Lifestyle"}</Button>
-                <Button variant="ghost" className="w-full justify-start">{"Medicine"}</Button>
-                <Button variant="ghost" className="w-full justify-start">{"Sports & Outdoor"}</Button>
-                <Button variant="ghost" className="w-full justify-start">{"Baby's & Toys"}</Button>
-                <Button variant="ghost" className="w-full justify-start">{"Groceries & Pets"}</Button>
-                <Button variant="ghost" className="w-full justify-start">{"Health & Beauty"}</Button>
+                {homeData.categories.length > 0 ? (
+                  homeData.categories.slice(0, 9).map((category) => (
+                    <Link href={`/category/${category.slug}`} key={category.id}>
+                      <Button variant="ghost" className="w-full justify-start">
+                        {category.name}
+                      </Button>
+                    </Link>
+                  ))
+                ) : null}
               </nav>
             </aside>
 
             {/* Main Content */}
-            <div className="space-y-6">
+            <div className="md:space-y-6">
               {/* Hero Carousel */}
-              <CrousalHero />
+              {settings.heroSectionEnabled && <CrousalHero />}
             </div>
           </div>
 
           {/* Full width sections */}
           <div className="mt-6 space-y-6">
             {/* Flash Sales */}
-            <FlashSale />
+            {settings.flashSaleEnabled && <FlashSale />}
 
             <div className="w-full">
               <img src="./assets/banner/Orange and White Modern Furniture Promo Mobile Banner Ads.png" 
@@ -64,113 +202,27 @@ export default function Home() {
             </div>
         
             {/* Browse By Category */}
-            <Categories />
+            {settings.categoriesEnabled && <Categories />}
 
             {/* Best Selling Products */}
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-1">This Month</h3>
-                  <h2 className="text-2xl font-bold text-app_red">Best Selling Products</h2>
-                </div>
-                <Button className="bg-app_red hover:bg-red-600">View All</Button>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {products.map((item, index) => (
-                  <Link href={`/product/${item.title}-${index}`} key={item.title} className="group">
-                  <Card key={item.title} className="group-hover:shadow-lg transition-shadow duration-300">
-                    <CardContent className="p-0">
-                      <div className="relative aspect-square">
-                        <Image
-                          src={item.image}
-                          alt="Product"
-                          fill
-                          className="object-cover rounded-t-lg"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                        >
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold truncate text-app_red">{item.title}</h3>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="text-primary font-bold">${item.sale_price}</span>
-                          <span className="text-sm text-muted-foreground line-through">${item.price}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {/* Enhance Your Music Experience */}
-            <section className="relative h-[400px] bg-black rounded-lg overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-between p-12">
-                <div className="text-white space-y-4">
-                  <span className="text-app_red">Categories</span>
-                  <h2 className="text-4xl font-bold">Enhance Your<br />Music Experience</h2>
-                  <div className="flex gap-4 lg:gap-8">
-                    {[
-                      { value: '23', label: 'Hours' },
-                      { value: '05', label: 'Days' },
-                      { value: '59', label: 'Minutes' },
-                      { value: '35', label: 'Seconds' },
-                    ].map((item) => (
-                      <div key={item.label} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white text-black flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="text-sm font-bold">{item.value}</div>
-                          <div className="text-xs">{item.label}</div>
-                        </div>
-                      </div>
-                    ))}
+            {settings.bestSellingEnabled && (
+              <section>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-1">This Month</h3>
+                    <h2 className="text-2xl font-bold text-app_red">Best Selling Products</h2>
                   </div>
-                  <Button className="bg-app_red hover:bg-red-600">Buy Now!</Button>
+                  <Button className="bg-app_red hover:bg-red-600">View All</Button>
                 </div>
-                <Image
-                  src="/assets/images/JBL_BOOMBAX.png"
-                  alt="Speaker"
-                  width={400}
-                  height={400}
-                  className="hidden md:block"
-                />
-              </div>
-            </section>
-
-            {/* Explore Our Products */}
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-primary font-semibold mb-1 ">Our Products</h3>
-                  <h2 className="text-2xl font-bold text-app_red">Explore Our Products</h2>
-                </div>
-                <div className="flex gap-2">
-
-                </div>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {[
-                  { name: "Gaming Console", price: "$99.99", rating: 5 },
-                  { name: "DSLR Camera", price: "$699.99", rating: 4 },
-                  { name: "Gaming Laptop", price: "$999.99", rating: 5 },
-                  { name: "Running Shoes", price: "$79.99", rating: 4 },
-                  { name: "RC Car", price: "$49.99", rating: 5 },
-                  { name: "Sports Shoes", price: "$89.99", rating: 4 },
-                  { name: "Game Controller", price: "$59.99", rating: 5 },
-                  { name: "Winter Jacket", price: "$129.99", rating: 4 },
-                ].map((product, index) => (
-                  <Link href={`/product/${index}`} key={index}>
-                    <Card key={index}>
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {(homeData.bestSellingProducts.length > 0 ? homeData.bestSellingProducts : products).map((item, index) => (
+                    <Link href={`/product/${item.slug}`} key={item.title || item.name} className="group">
+                    <Card key={item.title || item.name} className="group-hover:shadow-lg transition-shadow duration-300">
                       <CardContent className="p-0">
                         <div className="relative aspect-square">
                           <Image
-                            src="/placeholder.svg"
-                            alt={product.name}
+                            src={item.image || (item.images && item.images[0]?.url) || '/placeholder.svg'}
+                            alt="Product"
                             fill
                             className="object-cover rounded-t-lg"
                           />
@@ -181,31 +233,132 @@ export default function Home() {
                           >
                             <Heart className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 left-2 h-8 w-8 rounded-full"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
                         </div>
                         <div className="p-4">
-                          <h3 className="font-semibold truncate">{product.name}</h3>
+                          <h3 className="font-semibold truncate text-app_red">{item.title || item.name}</h3>
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="text-primary font-bold text-app_red">{product.price}</span>
-                          </div>
-                          <div className="flex items-center gap-1 mt-2">
-                            {Array(product.rating).fill(null).map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-orange-500 text-orange-400 text-primary" />
-                            ))}
+                            <span className="text-primary font-bold">${item.sale_price || item.salePrice || item.price}</span>
+                            {(item.price && item.sale_price && item.price !== item.sale_price) && (
+                              <span className="text-sm text-muted-foreground line-through">${item.price}</span>
+                            )}
                           </div>
                         </div>
                       </CardContent>
                     </Card>
-                  </Link>
-                ))}
-              </div>
-            </section>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Enhance Your Music Experience */}
+            {settings.featuredBannerEnabled && (
+              <section className="relative h-[400px] bg-black rounded-lg overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-between p-12">
+                  <div className="text-white space-y-4">
+                    <span className="text-app_red">Categories</span>
+                    <h2 className="text-4xl font-bold">Enhance Your<br />Music Experience</h2>
+                    <div className="flex gap-4 lg:gap-8">
+                      {[
+                        { value: '23', label: 'Hours' },
+                        { value: '05', label: 'Days' },
+                        { value: '59', label: 'Minutes' },
+                        { value: '35', label: 'Seconds' },
+                      ].map((item) => (
+                        <div key={item.label} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white text-black flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-sm font-bold">{item.value}</div>
+                            <div className="text-xs">{item.label}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button className="bg-app_red hover:bg-red-600">Buy Now!</Button>
+                  </div>
+                  <Image
+                    src="/assets/images/JBL_BOOMBAX.png"
+                    alt="Speaker"
+                    width={400}
+                    height={400}
+                    className="hidden md:block"
+                  />
+                </div>
+              </section>
+            )}
+
+            {/* Explore Our Products */}
+            {settings.exploreProductsEnabled && (
+              <section>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-primary font-semibold mb-1 ">Our Products</h3>
+                    <h2 className="text-2xl font-bold text-app_red">Explore Our Products</h2>
+                  </div>
+                  <div className="flex gap-2">
+
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {(homeData.products.length > 0 ? homeData.products.slice(0, 8) : [
+                    { name: "Gaming Console", price: "$99.99", rating: 5 },
+                    { name: "DSLR Camera", price: "$699.99", rating: 4 },
+                    { name: "Gaming Laptop", price: "$999.99", rating: 5 },
+                    { name: "Running Shoes", price: "$79.99", rating: 4 },
+                    { name: "RC Car", price: "$49.99", rating: 5 },
+                    { name: "Sports Shoes", price: "$89.99", rating: 4 },
+                    { name: "Game Controller", price: "$59.99", rating: 5 },
+                    { name: "Winter Jacket", price: "$129.99", rating: 4 },
+                  ]).map((product, index) => (
+                    <Link href={`/product/${product.id || index}`} key={product.id || index}>
+                      <Card key={product.id || index}>
+                        <CardContent className="p-0">
+                          <div className="relative aspect-square">
+                            <Image
+                              src={product.images?.[0]?.url || "/placeholder.svg"}
+                              alt={product.name}
+                              fill
+                              className="object-cover rounded-t-lg"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                            >
+                              <Heart className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-2 left-2 h-8 w-8 rounded-full"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="p-4">
+                            <h3 className="font-semibold truncate">{product.name}</h3>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-primary font-bold text-app_red">
+                                ${product.salePrice || product.price}
+                              </span>
+                              {product.salePrice && product.price !== product.salePrice && (
+                                <span className="text-sm text-muted-foreground line-through">
+                                  ${product.price}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 mt-2">
+                              {Array(product.rating || 5).fill(null).map((_, i) => (
+                                <Star key={i} className="h-4 w-4 fill-orange-500 text-orange-400 text-primary" />
+                              ))}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
             
             <div className="w-full">
               <img src="./assets/banner/BlESSED.png" 
@@ -214,6 +367,7 @@ export default function Home() {
             </div>
 
             {/* New Arrival */}
+            {settings.newArrivalEnabled && (
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="relative h-[400px] bg-black rounded-lg overflow-hidden">
                 <div className="absolute z-10 inset-0 p-8 flex flex-col justify-center text-white">
@@ -282,8 +436,10 @@ export default function Home() {
                 </div>
               </div>
             </section>
+            )}
 
             {/* Services */}
+            {settings.servicesEnabled && (
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
               <div className="flex flex-col items-center text-center">
                 <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
@@ -307,6 +463,7 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground">We return money within 30 days</p>
               </div>
             </section>
+            )}
           </div>
         </div>
       </main>

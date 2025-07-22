@@ -22,12 +22,30 @@ type ImageType = {
   selected: boolean;
 };
 
-export default function ImageGallery() {
+interface ImageGalleryProps {
+  mainImage?: string;
+  galleryImages?: string[];
+  onMainImageChange?: (url: string) => void;
+  onGalleryImagesChange?: (urls: string[]) => void;
+}
+
+export default function ImageGallery({ 
+  mainImage: propMainImage, 
+  galleryImages: propGalleryImages = [], 
+  onMainImageChange, 
+  onGalleryImagesChange 
+}: ImageGalleryProps) {
   const [attributes, setAttributes] = useState<string[]>([])
   const [linkedProducts, setLinkedProducts] = useState<string[]>([])
-  const [galleryImages, setGalleryImages] = useState<ImageType[]>([])
+  const [galleryImages, setGalleryImages] = useState<ImageType[]>(
+    propGalleryImages.map((url, index) => ({
+      id: index.toString(),
+      src: url,
+      selected: true
+    }))
+  )
   const [isVirtual, setIsVirtual] = useState(false)
-  const [mainImage, setMainImage] = useState<string | null>(null)
+  const [mainImage, setMainImage] = useState<string | null>(propMainImage || null)
   const [featuredVideoType, setFeaturedVideoType] = useState<'upload' | 'link'>('upload')
   const [featuredVideoLink, setFeaturedVideoLink] = useState('')
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false)
@@ -49,29 +67,56 @@ export default function ImageGallery() {
     setLinkedProducts(linkedProducts.filter((_, i) => i !== index))
   }
 
-  const handleMainImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'product');
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload file');
+    }
+
+    const data = await response.json();
+    return data.url;
+  };
+
+  const handleMainImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setMainImage(e.target?.result as string)
+      try {
+        const imageUrl = await uploadFile(file);
+        setMainImage(imageUrl);
+        onMainImageChange?.(imageUrl);
+      } catch (error) {
+        console.error('Upload error:', error);
       }
-      reader.readAsDataURL(file)
     }
   }
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    acceptedFiles.forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setGalleryImages((prevImages) => [
-          ...prevImages,
-          { id: Date.now().toString(), src: e.target?.result as string, selected: false }
-        ])
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    for (const file of acceptedFiles) {
+      try {
+        const imageUrl = await uploadFile(file);
+        setGalleryImages((prevImages) => {
+          const newImages = [
+            ...prevImages,
+            { id: Date.now().toString(), src: imageUrl, selected: true }
+          ];
+          // Notify parent of gallery images change
+          const selectedUrls = newImages.filter(img => img.selected).map(img => img.src);
+          onGalleryImagesChange?.(selectedUrls);
+          return newImages;
+        });
+      } catch (error) {
+        console.error('Upload error:', error);
       }
-      reader.readAsDataURL(file)
-    })
-  }, [])
+    }
+  }, [onGalleryImagesChange])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
@@ -83,16 +128,28 @@ export default function ImageGallery() {
 
   const addImageFromLink = () => {
     if (imageLink) {
-      setGalleryImages([
-        ...galleryImages,
-        { id: crypto.randomUUID(), src: imageLink, selected: false }
-      ])
-      setImageLink('')
+      setGalleryImages((prevImages) => {
+        const newImages = [
+          ...prevImages,
+          { id: crypto.randomUUID(), src: imageLink, selected: true }
+        ];
+        // Notify parent of gallery images change
+        const selectedUrls = newImages.filter(img => img.selected).map(img => img.src);
+        onGalleryImagesChange?.(selectedUrls);
+        return newImages;
+      });
+      setImageLink('');
     }
   }
 
   const removeImage = (id: number) => {
-    setGalleryImages(galleryImages.filter((img, index) => index !== id))
+    setGalleryImages((prevImages) => {
+      const newImages = prevImages.filter((img, index) => index !== id);
+      // Notify parent of gallery images change
+      const selectedUrls = newImages.filter(img => img.selected).map(img => img.src);
+      onGalleryImagesChange?.(selectedUrls);
+      return newImages;
+    });
   }
 
   return (
@@ -113,7 +170,10 @@ export default function ImageGallery() {
                 variant="outline"
                 size="icon"
                 className="absolute top-2 right-2"
-                onClick={() => setMainImage(null)}
+                onClick={() => {
+                  setMainImage(null);
+                  onMainImageChange?.('');
+                }}
               >
                 <X className="h-4 w-4" />
               </Button>

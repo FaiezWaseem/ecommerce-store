@@ -30,12 +30,14 @@ interface PropsDataTable {
   renderCell : (item : Object , columnKey : string)=> React.ReactNode,
   columns :  Object[],
   searchKey : string,
-  onAddNewClick?: () => void
+  onSearch ?: (search : any) => void,
+  onAddNewClick?: () => void,
+  loading ?: boolean
 }
 
 
 
-export default function DataTable( { data , INITIAL_VISIBLE_COLUMNS , searchKey , renderCell , columns , onAddNewClick }  : PropsDataTable ) {
+export default function DataTable( { data , INITIAL_VISIBLE_COLUMNS , searchKey , renderCell , columns , onAddNewClick  , onSearch , loading = false}  : PropsDataTable ) {
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
   const [visibleColumns, setVisibleColumns] = React.useState(new Set(INITIAL_VISIBLE_COLUMNS));
@@ -112,14 +114,18 @@ export default function DataTable( { data , INITIAL_VISIBLE_COLUMNS , searchKey 
 
   const onSearchChange = React.useCallback((value) => {
     if (value) {
+      onSearch?.(value)
       setFilterValue(value);
       setPage(1);
     } else {
-      setFilterValue("");
+      onSearch?.(undefined)
+      setFilterValue("")
+      setPage(1)
     }
   }, []);
 
   const onClear = React.useCallback(()=>{
+    onSearch?.(undefined)
     setFilterValue("")
     setPage(1)
   },[])
@@ -239,8 +245,9 @@ export default function DataTable( { data , INITIAL_VISIBLE_COLUMNS , searchKey 
       </div>
     );
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
-
+  
   return (
+  
     <Table
       aria-label="Example table with custom cells, pagination and sorting"
       isHeaderSticky
@@ -256,6 +263,7 @@ export default function DataTable( { data , INITIAL_VISIBLE_COLUMNS , searchKey 
       topContentPlacement="outside"
       onSelectionChange={setSelectedKeys}
       onSortChange={setSortDescriptor}
+      
     >
       <TableHeader columns={headerColumns}>
         {(column) => (

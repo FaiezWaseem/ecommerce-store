@@ -1,0 +1,501 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management with Multi-Role Support
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  phone     String?
+  role      UserRole @default(CUSTOMER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  orders    Order[]
+  reviews   Review[]
+  addresses Address[]
+  cartItems CartItem[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  MANAGEMENT
+  CUSTOMER
+}
+
+// Address Management
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  firstName  String
+  lastName   String
+  company    String?
+  address1   String
+  address2   String?
+  city       String
+  state      String
+  postalCode String
+  country    String
+  phone      String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billingOrders  Order[] @relation("BillingAddress")
+  shippingOrders Order[] @relation("ShippingAddress")
+
+  @@map("addresses")
+}
+
+// Category Management
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  image       String?
+  isActive    Boolean  @default(true)
+  parentId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  products Product[]
+  promotions PromotionCategory[]
+
+  @@map("categories")
+}
+
+// Product Management
+model Product {
+  id                String            @id @default(cuid())
+  name              String
+  slug              String            @unique
+  description       String?
+  shortDescription  String?
+  sku               String?           @unique
+  regularPrice      Decimal
+  salePrice         Decimal?
+  weight            Decimal?
+  length            Decimal?
+  width             Decimal?
+  height            Decimal?
+  status            ProductStatus     @default(DRAFT)
+  stockStatus       StockStatus       @default(IN_STOCK)
+  manageStock       Boolean           @default(false)
+  stockQuantity     Int?              @default(0)
+  allowBackorders   BackorderStatus   @default(NO)
+  taxStatus         TaxStatus         @default(TAXABLE)
+  taxClass          TaxClass          @default(STANDARD)
+  shippingClass     ShippingClass     @default(STANDARD)
+  isVirtual         Boolean           @default(false)
+  isFeatured        Boolean           @default(false)
+  enableReviews     Boolean           @default(true)
+  purchaseNote      String?
+  menuOrder         Int               @default(0)
+  categoryId        String?
+  featuredVideoType FeaturedVideoType @default(UPLOAD)
+  featuredVideoLink String?
+  featuredVideoFile String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  category       Category?          @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  attributes     ProductAttribute[]
+  linkedProducts ProductLink[]
+  reviews        Review[]
+  orderItems     OrderItem[]
+  cartItems      CartItem[]
+  promotions     PromotionProduct[]
+
+  @@map("products")
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum StockStatus {
+  IN_STOCK
+  OUT_OF_STOCK
+  ON_BACKORDER
+}
+
+enum BackorderStatus {
+  NO
+  NOTIFY
+  YES
+}
+
+enum TaxStatus {
+  TAXABLE
+  SHIPPING
+  NONE
+}
+
+enum TaxClass {
+  STANDARD
+  REDUCED
+  ZERO
+}
+
+enum ShippingClass {
+  STANDARD
+  EXPRESS
+  INTERNATIONAL
+}
+
+enum FeaturedVideoType {
+  UPLOAD
+  LINK
+}
+
+// Product Images
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  isMain    Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+// Product Attributes
+model ProductAttribute {
+  id        String   @id @default(cuid())
+  productId String
+  name      String
+  value     String
+  createdAt DateTime @default(now())
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_attributes")
+}
+
+// Product Linking (Related/Cross-sell/Up-sell)
+model ProductLink {
+  id              String          @id @default(cuid())
+  productId       String
+  linkedProductId String
+  linkType        ProductLinkType @default(RELATED)
+  createdAt       DateTime        @default(now())
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, linkedProductId, linkType])
+  @@map("product_links")
+}
+
+enum ProductLinkType {
+  RELATED
+  CROSS_SELL
+  UP_SELL
+}
+
+// Shopping Cart
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("cart_items")
+}
+
+// Order Management
+model Order {
+  id                String        @id @default(cuid())
+  userId            String
+  orderNumber       String        @unique
+  status            OrderStatus   @default(PENDING)
+  subtotal          Decimal
+  taxAmount         Decimal       @default(0)
+  shippingAmount    Decimal       @default(0)
+  discountAmount    Decimal       @default(0)
+  totalAmount       Decimal
+  currency          String        @default("USD")
+  paymentStatus     PaymentStatus @default(PENDING)
+  paymentMethod     String?
+  shippingMethod    String?
+  notes             String?
+  billingAddressId  String?
+  shippingAddressId String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  user            User        @relation(fields: [userId], references: [id])
+  billingAddress  Address?    @relation("BillingAddress", fields: [billingAddressId], references: [id])
+  shippingAddress Address?    @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  items           OrderItem[]
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// Order Items
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Decimal
+  total     Decimal
+  createdAt DateTime @default(now())
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// Product Reviews
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  productId  String
+  rating    Int
+  title      String?
+  comment    String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("reviews")
+}
+
+// Home Page Customization
+model HomePageSettings {
+  id                    String   @id @default(cuid())
+  topBannerEnabled      Boolean  @default(true)
+  topBannerText         String?  @default("Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%!")
+  topBannerLink         String?  @default("#")
+  topBannerLinkText     String?  @default("ShopNow")
+  heroSectionEnabled    Boolean  @default(true)
+  categoriesEnabled     Boolean  @default(true)
+  flashSaleEnabled      Boolean  @default(true)
+  bestSellingEnabled    Boolean  @default(true)
+  featuredBannerEnabled Boolean  @default(true)
+  exploreProductsEnabled Boolean @default(true)
+  newArrivalEnabled     Boolean  @default(true)
+  servicesEnabled       Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("home_page_settings")
+}
+
+model CarouselBanner {
+  id          String        @id @default(cuid())
+  title       String
+  subtitle    String?
+  description String?
+  buttonText  String?
+  buttonLink  String?
+  image       String?
+  logoImage   String?
+  bgColor     String?       @default("#000000")
+  textColor   String?       @default("#ffffff")
+  isActive    Boolean       @default(true)
+  sortOrder   Int           @default(0)
+  position    BannerPosition @default(LEFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("carousel_banners")
+}
+
+enum BannerPosition {
+  LEFT
+  CENTER
+  RIGHT
+}
+
+model PromotionalBanner {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  image       String
+  link        String?
+  position    BannerType  @default(MIDDLE)
+  isActive    Boolean     @default(true)
+  sortOrder   Int         @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("promotional_banners")
+}
+
+enum BannerType {
+  TOP
+  MIDDLE
+  BOTTOM
+  SIDEBAR
+}
+
+model FeaturedSection {
+  id          String             @id @default(cuid())
+  title       String
+  subtitle    String?
+  description String?
+  image       String?
+  bgColor     String?            @default("#000000")
+  textColor   String?            @default("#ffffff")
+  buttonText  String?
+  buttonLink  String?
+  countdown   Boolean            @default(false)
+  countdownEnd DateTime?
+  type        FeaturedSectionType @default(MUSIC)
+  isActive    Boolean            @default(true)
+  sortOrder   Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("featured_sections")
+}
+
+enum FeaturedSectionType {
+  MUSIC
+  GAMING
+  FASHION
+  ELECTRONICS
+  CUSTOM
+}
+
+model PromotionProduct {
+  id        String   @id @default(cuid())
+  productId String
+  title     String?
+  badge     String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("promotion_products")
+}
+
+model PromotionCategory {
+  id         String   @id @default(cuid())
+  categoryId String
+  title      String?
+  badge      String?
+  isActive   Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  startDate  DateTime?
+  endDate    DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("promotion_categories")
+}
+
+model HeadlineMessage {
+  id        String   @id @default(cuid())
+  message   String
+  type      MessageType @default(INFO)
+  isActive  Boolean  @default(true)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("headline_messages")
+}
+
+enum MessageType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  SALE
+}
+
+model SaleBanner {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  discount    String?
+  image       String?
+  bgColor     String?  @default("#ff0000")
+  textColor   String?  @default("#ffffff")
+  buttonText  String?
+  buttonLink  String?
+  isActive    Boolean  @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("sale_banners")
+}

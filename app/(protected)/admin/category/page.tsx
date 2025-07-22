@@ -1,5 +1,5 @@
 'use client';
-import React from "react";
+import React, { useState, useEffect } from "react";
 import AdminNav from "@/components/navbar/admin-nav"
 import DataTable from "@/components/data-table"
 import {
@@ -13,73 +13,164 @@ import {
 } from "@nextui-org/react";
 import { VerticalDotsIcon } from "@/components/data-table/VerticalDotsIcon";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-const INITIAL_VISIBLE_COLUMNS = ["cat_name", "status", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["name", "status", "products_count", "actions"];
 
-const statusColorMap = {
-    active: "success",
-    paused: "danger",
-    vacation: "warning",
-};
-
-const data = [
-    {
-        id: 1,
-        cat_name: 'Bedsheet',
-        status: 'active'
-    }
-]
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+    image?: string;
+    isActive: boolean;
+    parentId?: string;
+    createdAt: string;
+    updatedAt: string;
+    parent?: {
+        id: string;
+        name: string;
+    };
+    children?: {
+        id: string;
+        name: string;
+    }[];
+    _count: {
+        products: number;
+    };
+}
 
 const columns = [
     { name: "ID", uid: "id", sortable: true },
-    { name: "NAME", uid: "cat_name", sortable: true },
+    { name: "NAME", uid: "name", sortable: true },
     { name: "STATUS", uid: "status", sortable: true },
+    { name: "PRODUCTS", uid: "products_count", sortable: true },
     { name: "ACTIONS", uid: "actions" },
 ];
 
 export default function AdminCategory() {
-
     const navigate = useRouter();
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [deleting, setDeleting] = useState<string | null>(null);
 
-    const renderCell = (user: { [key: string]: any }, columnKey: string) => {
-        const cellValue = user[columnKey];
-        const statusColorMap: { [key: string]: string } = {
-            active: 'success',
-            paused: 'warning',
-            vacation: 'info'
+    const fetchCategories = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/categories');
+            if (!response.ok) {
+                throw new Error('Failed to fetch categories');
+            }
+            const data = await response.json();
+            setCategories(data.categories);
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            toast.error('Failed to load categories');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (categoryId: string) => {
+        if (!confirm('Are you sure you want to delete this category?')) {
+            return;
+        }
+
+        try {
+            setDeleting(categoryId);
+            const response = await fetch(`/api/categories/${categoryId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete category');
+            }
+
+            toast.success('Category deleted successfully');
+            fetchCategories(); // Refresh the list
+        } catch (error: any) {
+            console.error('Error deleting category:', error);
+            toast.error(error.message || 'Failed to delete category');
+        } finally {
+            setDeleting(null);
+        }
+    };
+
+    const handleEdit = (categoryId: string) => {
+        navigate.push(`/admin/category/${categoryId}`);
+    };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const renderCell = (category: any, columnKey: string) => {
+        const cellValue = category[columnKey as keyof Category];
+        const statusColorMap: { [key: string]: "success" | "danger" | "warning" | "secondary" | "default" | "primary" } = {
+            true: 'success',
+            false: 'danger'
         };
+        
         switch (columnKey) {
-            case "cat_name":
+            case "name":
                 return (
-                    <p>{cellValue}</p>
+                    <div className="flex flex-col">
+                        <p className="text-bold text-sm capitalize">{category.name}</p>
+                        {category.parent && (
+                            <p className="text-bold text-sm capitalize text-default-400">
+                                Parent: {category.parent.name}
+                            </p>
+                        )}
+                    </div>
                 );
             case "status":
-                //@ts-ignore
-                const color : "success" | "danger" | "warning" | "secondary" | "default" | "primary" | undefined = statusColorMap[user.status] || 'secondary';
+                const color = statusColorMap[category.isActive.toString()] || 'secondary';
                 return (
                     <Chip className="capitalize" color={color} size="sm" variant="flat">
-                        {cellValue}
+                        {category.isActive ? 'Active' : 'Inactive'}
                     </Chip>
+                );
+            case "products_count":
+                return (
+                    <p className="text-bold text-sm">{category._count.products}</p>
                 );
             case "actions":
                 return (
                     <div className="relative flex justify-end items-center gap-2">
                         <Dropdown>
                             <DropdownTrigger>
-                                <Button isIconOnly size="sm" variant="light">
+                                <Button 
+                                    isIconOnly 
+                                    size="sm" 
+                                    variant="light"
+                                    isDisabled={deleting === category.id}
+                                >
                                     <VerticalDotsIcon className="text-default-300" />
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu>
-                                <DropdownItem>View</DropdownItem>
-                                <DropdownItem>Edit</DropdownItem>
-                                <DropdownItem>Delete</DropdownItem>
+                                <DropdownItem
+                                    key="edit"
+                                    onPress={() => handleEdit(category.id)}
+                                >
+                                    Edit
+                                </DropdownItem>
+                                <DropdownItem
+                                    key="delete"
+                                    className="text-danger"
+                                    color="danger"
+                                    onPress={() => handleDelete(category.id)}
+                                    isDisabled={deleting === category.id}
+                                >
+                                    {deleting === category.id ? 'Deleting...' : 'Delete'}
+                                </DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </div>
                 );
             default:
-                return cellValue;
+                return cellValue as React.ReactNode;
         }
     }
 
@@ -93,16 +184,22 @@ export default function AdminCategory() {
                 <hr className="mt-3" />
             </div>
             <div className="flex-1 space-y-4 p-8 pt-6">
-                <DataTable
-                    renderCell={renderCell}
-                    data={data}
-                    columns={columns}
-                    INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
-                    searchKey="cat_name"
-                    onAddNewClick={(()=> {
-                        navigate.push('/admin/category/new')
-                    })}
-                />
+                {loading ? (
+                    <div className="flex items-center justify-center h-64">
+                        <div className="text-lg">Loading categories...</div>
+                    </div>
+                ) : (
+                    <DataTable
+                        renderCell={renderCell}
+                        data={categories}
+                        columns={columns}
+                        INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
+                        searchKey="name"
+                        onAddNewClick={() => {
+                            navigate.push('/admin/category/new')
+                        }}
+                    />
+                )}
             </div>
         </main>
 

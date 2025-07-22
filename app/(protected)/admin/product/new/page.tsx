@@ -42,26 +42,93 @@ import { Textarea } from "@/components/ui/textarea"
 import ImageGallery from "@/components/Dashboard/product/image-gallery";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 export default function AddProduct() {
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
+    
+    // Form state
+    const [formData, setFormData] = useState({
+        name: '',
+        description: '',
+        categoryId: '',
+        sku: '',
+        regularPrice: '',
+        salePrice: '',
+        stockQuantity: '',
+        weight: '',
+        length: '',
+        width: '',
+        height: '',
+        status: 'DRAFT',
+        isFeatured: false,
+        manageStock: false,
+        stockStatus: 'IN_STOCK',
+        taxStatus: 'taxable',
+        taxClass: 'standard',
+        shippingClass: 'standard',
+        allowBackorders: 'no',
+        purchaseNote: '',
+        menuOrder: 0,
+        enableReviews: true
+    });
+    
+    const [attributes, setAttributes] = useState<{name: string, value: string}[]>([]);
+    const [linkedProducts, setLinkedProducts] = useState<string[]>([]);
+    const [galleryImages, setGalleryImages] = useState<string[]>([]);
+    const [isVirtual, setIsVirtual] = useState(false);
+    const [mainImage, setMainImage] = useState<string | null>(null);
+    const [featuredVideoType, setFeaturedVideoType] = useState<'upload' | 'link'>('upload');
+    const [featuredVideoLink, setFeaturedVideoLink] = useState('');
+    const [featuredVideoFile, setFeaturedVideoFile] = useState<string | null>(null);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
 
-    const [attributes, setAttributes] = useState<string[]>([])
-    const [linkedProducts, setLinkedProducts] = useState<string[]>([])
-    const [galleryImages, setGalleryImages] = useState<string[]>([])
-    const [isVirtual, setIsVirtual] = useState(false)
-    const [mainImage, setMainImage] = useState<string | null>(null)
-    const [featuredVideoType, setFeaturedVideoType] = useState<'upload' | 'link'>('upload')
-    const [featuredVideoLink, setFeaturedVideoLink] = useState('')
+    // Fetch categories on component mount
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch('/api/categories?limit=100');
+            if (response.ok) {
+                const data = await response.json();
+                setCategories(data.categories);
+            }
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            toast.error('Failed to fetch categories');
+        }
+    };
+
+    const handleInputChange = (field: string, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
 
     const addAttribute = () => {
-        setAttributes([...attributes, ''])
-    }
+        setAttributes([...attributes, { name: '', value: '' }]);
+    };
 
     const removeAttribute = (index: number) => {
-        setAttributes(attributes.filter((_, i) => i !== index))
-    }
+        setAttributes(attributes.filter((_, i) => i !== index));
+    };
+
+    const updateAttribute = (index: number, field: 'name' | 'value', value: string) => {
+        const updated = [...attributes];
+        updated[index][field] = value;
+        setAttributes(updated);
+    };
 
     const addLinkedProduct = () => {
         setLinkedProducts([...linkedProducts, ''])
@@ -79,16 +146,150 @@ export default function AddProduct() {
         setGalleryImages(galleryImages.filter((_, i) => i !== index))
     }
 
-    const handleMainImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onload = (e) => {
-                setMainImage(e.target?.result as string)
-            }
-            reader.readAsDataURL(file)
+    const uploadFile = async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'product');
+
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to upload file');
         }
-    }
+
+        const data = await response.json();
+        return data.url; // Return the public URL of the uploaded file
+    };
+    
+    const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            try {
+                setUploadingVideo(true);
+                toast.loading('Uploading video...');
+                const videoUrl = await uploadFile(file);
+                setFeaturedVideoFile(videoUrl);
+                toast.dismiss();
+                toast.success('Video uploaded successfully!');
+            } catch (error) {
+                toast.dismiss();
+                toast.error('Failed to upload video');
+                console.error('Upload error:', error);
+            } finally {
+                setUploadingVideo(false);
+            }
+        }
+    };
+
+    const handleMainImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            try {
+                toast.loading('Uploading image...');
+                const imageUrl = await uploadFile(file);
+                setMainImage(imageUrl);
+                toast.dismiss();
+                toast.success('Image uploaded successfully!');
+            } catch (error) {
+                toast.dismiss();
+                toast.error('Failed to upload image');
+                console.error('Upload error:', error);
+            }
+        }
+    };
+
+    // Helper function to generate slug from name
+    const generateSlug = (name: string) => {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+    };
+
+    const handleSubmit = async () => {
+        if (!formData.name.trim()) {
+            toast.error('Product name is required');
+            return;
+        }
+        
+        if (!formData.categoryId) {
+            toast.error('Please select a category');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Prepare images array
+            const images = [];
+            if (mainImage) {
+                images.push({
+                    url: mainImage,
+                    alt: formData.name,
+                    isMain: true,
+                    sortOrder: 0
+                });
+            }
+            
+            // Add gallery images
+            galleryImages.forEach((imageUrl, index) => {
+                if (imageUrl && imageUrl !== mainImage) {
+                    images.push({
+                        url: imageUrl,
+                        alt: formData.name,
+                        isMain: false,
+                        sortOrder: index + 1
+                    });
+                }
+            });
+
+            const productData = {
+                ...formData,
+                slug: generateSlug(formData.name),
+                regularPrice: parseFloat(formData.regularPrice) || 0,
+                salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+                stockQuantity: parseInt(formData.stockQuantity) || 0,
+                weight: formData.weight ? parseFloat(formData.weight) : null,
+                length: formData.length ? parseFloat(formData.length) : null,
+                width: formData.width ? parseFloat(formData.width) : null,
+                height: formData.height ? parseFloat(formData.height) : null,
+                menuOrder: parseInt(formData.menuOrder.toString()) || 0,
+                attributes: attributes.filter(attr => attr.name && attr.value),
+                images: images,
+                featuredVideoType: featuredVideoType.toUpperCase(),
+                featuredVideoLink: featuredVideoType === 'link' ? featuredVideoLink : null,
+                featuredVideoFile: featuredVideoType === 'upload' ? featuredVideoFile : null,
+                isVirtual
+            };
+
+            const response = await fetch('/api/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(productData),
+            });
+
+            if (response.ok) {
+                toast.success('Product created successfully!');
+                router.push('/admin/products');
+            } else {
+                const error = await response.json();
+                toast.error(error.error || 'Failed to create product');
+            }
+        } catch (error) {
+            console.error('Error creating product:', error);
+            toast.error('Failed to create product');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDiscard = () => {
+        router.push('/admin/products');
+    };
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -139,10 +340,12 @@ export default function AddProduct() {
                                 In stock
                             </Badge>
                             <div className="hidden items-center gap-2 md:ml-auto md:flex">
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" onClick={handleDiscard} disabled={loading}>
                                     Discard
                                 </Button>
-                                <Button size="sm">Save Product</Button>
+                                <Button size="sm" onClick={handleSubmit} disabled={loading}>
+                                    {loading ? 'Saving...' : 'Save Product'}
+                                </Button>
                             </div>
                         </div>
                         <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
@@ -162,15 +365,19 @@ export default function AddProduct() {
                                                     id="name"
                                                     type="text"
                                                     className="w-full"
-                                                    defaultValue="Gamer Gear Pro Controller"
+                                                    value={formData.name}
+                                                    onChange={(e) => handleInputChange('name', e.target.value)}
+                                                    placeholder="Enter product name"
                                                 />
                                             </div>
                                             <div className="grid gap-3">
                                                 <Label htmlFor="description">Description</Label>
                                                 <Textarea
                                                     id="description"
-                                                    defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl nec ultricies ultricies, nunc nisl ultricies nunc, nec ultricies nunc nisl nec nunc."
+                                                    value={formData.description}
+                                                    onChange={(e) => handleInputChange('description', e.target.value)}
                                                     className="min-h-32"
+                                                    placeholder="Enter product description"
                                                 />
                                             </div>
                                         </div>
@@ -185,7 +392,7 @@ export default function AddProduct() {
                                         <div className="grid gap-6 sm:grid-cols-3">
                                             <div className="grid gap-3">
                                                 <Label htmlFor="category">Category</Label>
-                                                <Select>
+                                                <Select value={formData.categoryId} onValueChange={(value) => handleInputChange('categoryId', value)}>
                                                     <SelectTrigger
                                                         id="category"
                                                         aria-label="Select category"
@@ -193,13 +400,11 @@ export default function AddProduct() {
                                                         <SelectValue placeholder="Select category" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="clothing">Clothing</SelectItem>
-                                                        <SelectItem value="electronics">
-                                                            Electronics
-                                                        </SelectItem>
-                                                        <SelectItem value="accessories">
-                                                            Accessories
-                                                        </SelectItem>
+                                                        {categories.map((category) => (
+                                                            <SelectItem key={category.id} value={category.id}>
+                                                                {category.name}
+                                                            </SelectItem>
+                                                        ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -241,17 +446,29 @@ export default function AddProduct() {
                                                 <div className="grid gap-4 sm:grid-cols-2">
                                                     <div className="space-y-2">
                                                         <Label htmlFor="regular-price">Regular price</Label>
-                                                        <Input id="regular-price" type="number" placeholder="0.00" />
+                                                        <Input 
+                                                            id="regular-price" 
+                                                            type="number" 
+                                                            placeholder="0.00" 
+                                                            value={formData.regularPrice}
+                                                            onChange={(e) => handleInputChange('regularPrice', e.target.value)}
+                                                        />
                                                     </div>
                                                     <div className="space-y-2">
                                                         <Label htmlFor="sale-price">Sale price</Label>
-                                                        <Input id="sale-price" type="number" placeholder="0.00" />
+                                                        <Input 
+                                                            id="sale-price" 
+                                                            type="number" 
+                                                            placeholder="0.00" 
+                                                            value={formData.salePrice}
+                                                            onChange={(e) => handleInputChange('salePrice', e.target.value)}
+                                                        />
                                                     </div>
                                                 </div>
                                                 <Separator />
                                                 <div className="space-y-2">
                                                     <Label>Tax status</Label>
-                                                    <Select>
+                                                    <Select value={formData.taxStatus} onValueChange={(value) => handleInputChange('taxStatus', value)}>
                                                         <SelectTrigger>
                                                             <SelectValue placeholder="Select tax status" />
                                                         </SelectTrigger>
@@ -279,7 +496,12 @@ export default function AddProduct() {
                                             <TabsContent value="inventory" className="space-y-4">
                                                 <div className="space-y-2">
                                                     <Label htmlFor="sku">SKU</Label>
-                                                    <Input id="sku" placeholder="Enter SKU" />
+                                                    <Input 
+                                                        id="sku" 
+                                                        placeholder="Enter SKU" 
+                                                        value={formData.sku}
+                                                        onChange={(e) => handleInputChange('sku', e.target.value)}
+                                                    />
                                                 </div>
                                                 {!isVirtual && (
                                                     <>
@@ -298,7 +520,13 @@ export default function AddProduct() {
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label htmlFor="stock-quantity">Stock quantity</Label>
-                                                            <Input id="stock-quantity" type="number" placeholder="0" />
+                                                            <Input 
+                                                                id="stock-quantity" 
+                                                                type="number" 
+                                                                placeholder="0" 
+                                                                value={formData.stockQuantity}
+                                                                onChange={(e) => handleInputChange('stockQuantity', e.target.value)}
+                                                            />
                                                         </div>
                                                         <div className="space-y-2">
                                                             <Label>Allow backorders?</Label>
@@ -322,9 +550,9 @@ export default function AddProduct() {
                                                             <SelectValue placeholder="Select stock status" />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="instock">In stock</SelectItem>
-                                                            <SelectItem value="outofstock">Out of stock</SelectItem>
-                                                            {!isVirtual && <SelectItem value="onbackorder">On backorder</SelectItem>}
+                                                            <SelectItem value="IN_STOCK">In stock</SelectItem>
+                                                             <SelectItem value="OUT_OF_STOCK">Out of stock</SelectItem>
+                                                             {!isVirtual && <SelectItem value="ON_BACKORDER">On backorder</SelectItem>}
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
@@ -391,7 +619,7 @@ export default function AddProduct() {
                                                 </Button>
                                             </TabsContent>
                                             <TabsContent value="attributes" className="space-y-4">
-                                                {attributes.map((_, index) => (
+                                                {attributes.map((attribute, index) => (
                                                     <div key={index} className="space-y-2">
                                                         <div className="flex items-center justify-between">
                                                             <Label>Attribute {index + 1}</Label>
@@ -399,8 +627,16 @@ export default function AddProduct() {
                                                                 <X className="h-4 w-4" />
                                                             </Button>
                                                         </div>
-                                                        <Input placeholder="Attribute name" />
-                                                        <Input placeholder="Attribute value(s)" />
+                                                        <Input 
+                                                            placeholder="Attribute name" 
+                                                            value={attribute.name}
+                                                            onChange={(e) => updateAttribute(index, 'name', e.target.value)}
+                                                        />
+                                                        <Input 
+                                                            placeholder="Attribute value(s)" 
+                                                            value={attribute.value}
+                                                            onChange={(e) => updateAttribute(index, 'value', e.target.value)}
+                                                        />
                                                     </div>
                                                 ))}
                                                 <Button variant="outline" onClick={addAttribute}>
@@ -443,20 +679,24 @@ export default function AddProduct() {
                                         <div className="grid gap-6">
                                             <div className="grid gap-3">
                                                 <Label htmlFor="status">Status</Label>
-                                                <Select>
+                                                <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
                                                     <SelectTrigger id="status" aria-label="Select status">
                                                         <SelectValue placeholder="Select status" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="draft">Draft</SelectItem>
-                                                        <SelectItem value="published">Active</SelectItem>
-                                                        <SelectItem value="archived">Archived</SelectItem>
+                                                        <SelectItem value="DRAFT">Draft</SelectItem>
+                                                        <SelectItem value="ACTIVE">Active</SelectItem>
+                                                        <SelectItem value="ARCHIVED">Archived</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                             <div className="space-y-2">
                                                 <div className="flex items-center space-x-2">
-                                                    <Checkbox id="featured-product" />
+                                                    <Checkbox 
+                                                        id="featured-product" 
+                                                        checked={formData.isFeatured}
+                                                        onCheckedChange={(checked) => handleInputChange('isFeatured', checked)}
+                                                    />
                                                     <Label htmlFor="featured-product">Add to featured products</Label>
                                                 </div>
                                             </div>
@@ -471,7 +711,12 @@ export default function AddProduct() {
 
                                     </CardHeader>
                                     <CardContent>
-                                        <ImageGallery />
+                                        <ImageGallery 
+                            mainImage={mainImage || ''}
+                            galleryImages={galleryImages}
+                            onMainImageChange={setMainImage}
+                            onGalleryImagesChange={setGalleryImages}
+                        />
                                         {/* <div className="grid gap-2">
                                             <Image
                                                 alt="Product image"
@@ -530,11 +775,42 @@ export default function AddProduct() {
                                                 </RadioGroup>
                                             </div>
                                             {featuredVideoType === 'upload' ? (
-                                                <div className="flex items-center space-x-2">
-                                                    <Input id="video-file" type="file" accept="video/*" className="flex-1" />
-                                                    <Button type="button" size="icon">
-                                                        <Upload className="h-4 w-4" />
-                                                    </Button>
+                                                <div className="space-y-4">
+                                                    {featuredVideoFile ? (
+                                                        <div className="relative w-full">
+                                                            <video 
+                                                                src={featuredVideoFile} 
+                                                                controls 
+                                                                className="w-full h-auto rounded-md"
+                                                            />
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="absolute top-2 right-2"
+                                                                onClick={() => setFeaturedVideoFile(null)}
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center space-x-2">
+                                                            <Input 
+                                                                id="video-file" 
+                                                                type="file" 
+                                                                accept="video/*" 
+                                                                className="flex-1" 
+                                                                onChange={handleVideoUpload}
+                                                                disabled={uploadingVideo}
+                                                            />
+                                                            <Button type="button" size="icon" disabled={uploadingVideo}>
+                                                                {uploadingVideo ? (
+                                                                    <span className="animate-spin">⏳</span>
+                                                                ) : (
+                                                                    <Upload className="h-4 w-4" />
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <Input
@@ -564,10 +840,12 @@ export default function AddProduct() {
                             </div>
                         </div>
                         <div className="flex items-center justify-center gap-2 md:hidden">
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={handleDiscard} disabled={loading}>
                                 Discard
                             </Button>
-                            <Button size="sm">Save Product</Button>
+                            <Button size="sm" onClick={handleSubmit} disabled={loading}>
+                                {loading ? 'Saving...' : 'Save Product'}
+                            </Button>
                         </div>
                     </div>
                 </main>
