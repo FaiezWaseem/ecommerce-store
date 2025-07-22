@@ -34,8 +34,8 @@ interface Product {
     description?: string
     shortDescription?: string
     sku?: string
-    regularPrice: number
-    salePrice?: number
+    regularPrice: string | number
+    salePrice?: string | number | null
     status: string
     stockStatus: string
     featuredVideoLink: string
@@ -241,11 +241,18 @@ export default function ProductPage({ params }: ProductPageProps) {
     const galleryImages = product.images && product.images.length > 0 ? product.images : []
 
     // Format price
-    const formatPrice = (price: number) => `Rs ${price || ''}`
-    const currentPrice = Number(product.salePrice) || Number(product.regularPrice)
-    const hasDiscount = Number(product.salePrice) > 0 && Number(product.salePrice) < Number(product.regularPrice)
-    const discountPercent = hasDiscount
-        ? Math.round(((Number(product.regularPrice) - currentPrice) / Number(product.regularPrice)) * 100)
+    const formatPrice = (price: string | number | null | undefined) => {
+        const numPrice = typeof price === 'string' ? parseFloat(price) : (price || 0)
+        return `Rs ${numPrice}`
+    }
+    
+    const regularPriceNum = typeof product.regularPrice === 'string' ? parseFloat(product.regularPrice) : product.regularPrice
+    const salePriceNum = product.salePrice ? (typeof product.salePrice === 'string' ? parseFloat(product.salePrice) : product.salePrice) : null
+    
+    const currentPrice = salePriceNum || regularPriceNum || 0
+    const hasDiscount = salePriceNum && regularPriceNum && salePriceNum > 0 && salePriceNum < regularPriceNum
+    const discountPercent = hasDiscount && regularPriceNum
+        ? Math.round(((regularPriceNum - currentPrice) / regularPriceNum) * 100)
         : 0
 
     // Generate structured data for SEO
@@ -478,8 +485,8 @@ export default function ProductPage({ params }: ProductPageProps) {
                                 <div className="mt-4 flex items-center gap-2">
                                     <span className="text-2xl font-bold" itemProp="price" content={currentPrice.toString()}>{formatPrice(currentPrice)}</span>
                                     {hasDiscount && (
-                                        <span className="text-lg text-muted-foreground line-through" itemProp="highPrice" content={product.regularPrice.toString()}>
-                                            {formatPrice(product.regularPrice)}
+                                        <span className="text-lg text-muted-foreground line-through" itemProp="highPrice" content={regularPriceNum.toString()}>
+                                            {formatPrice(regularPriceNum)}
                                         </span>
                                     )}
                                     {hasDiscount && (
@@ -677,10 +684,13 @@ export default function ProductPage({ params }: ProductPageProps) {
                         <h2 id="related-products" className="mb-6 text-2xl font-bold">Related Items</h2>
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                             {relatedProducts.map((relatedProduct) => {
-                                const relatedCurrentPrice = relatedProduct.salePrice || relatedProduct.regularPrice
-                                const relatedHasDiscount = relatedProduct.salePrice && relatedProduct.salePrice < relatedProduct.regularPrice
-                                const relatedDiscountPercent = relatedHasDiscount
-                                    ? Math.round(((relatedProduct.regularPrice - relatedCurrentPrice) / relatedProduct.regularPrice) * 100)
+                                const relatedRegularPriceNum = typeof relatedProduct.regularPrice === 'string' ? parseFloat(relatedProduct.regularPrice) : relatedProduct.regularPrice
+                                const relatedSalePriceNum = relatedProduct.salePrice ? (typeof relatedProduct.salePrice === 'string' ? parseFloat(relatedProduct.salePrice) : relatedProduct.salePrice) : null
+                                
+                                const relatedCurrentPrice = relatedSalePriceNum || relatedRegularPriceNum
+                                const relatedHasDiscount = relatedSalePriceNum && relatedRegularPriceNum && relatedSalePriceNum < relatedRegularPriceNum
+                                const relatedDiscountPercent = relatedHasDiscount && relatedRegularPriceNum
+                                    ? Math.round(((relatedRegularPriceNum - relatedCurrentPrice) / relatedRegularPriceNum) * 100)
                                     : 0
                                 const relatedAverageRating = relatedProduct.reviews && relatedProduct.reviews.length > 0
                                     ? relatedProduct.reviews.reduce((sum, review) => sum + review.rating, 0) / relatedProduct.reviews.length
@@ -720,7 +730,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                                                     </span>
                                                     {relatedHasDiscount && (
                                                         <span className="text-sm text-muted-foreground line-through">
-                                                            {formatPrice(relatedProduct.regularPrice)}
+                                                            {formatPrice(relatedRegularPriceNum)}
                                                         </span>
                                                     )}
                                                 </div>

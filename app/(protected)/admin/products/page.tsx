@@ -160,9 +160,9 @@ export default function AdminProducts() {
             case "price":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-sm">${product.regularPrice}</p>
+                        <p className="text-bold text-sm">Rs {product.regularPrice}</p>
                         {product.salePrice && (
-                            <p className="text-tiny text-success">${product.salePrice}</p>
+                            <p className="text-tiny text-success">Rs {product.salePrice}</p>
                         )}
                     </div>
                 );

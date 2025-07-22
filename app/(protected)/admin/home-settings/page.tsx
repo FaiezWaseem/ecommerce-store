@@ -1035,11 +1035,11 @@ export default function HomeSettingsPage() {
                                <h3 className="font-medium">{item.product.name}</h3>
                                <div className="flex items-center gap-2 mt-1">
                                  <span className="text-gray-600 line-through">
-                                   ${item.product.regularPrice}
+                                   Rs {item.product.regularPrice}
                                  </span>
                                  {item.product.salePrice && (
                                    <span className="text-red-600 font-medium">
-                                     ${item.product.salePrice}
+                                     Rs {item.product.salePrice}
                                    </span>
                                  )}
                                </div>
@@ -1762,9 +1762,9 @@ const FlashSaleProductModal = ({ isOpen, onClose, onSave }: {
                   <div className="flex-1">
                     <h4 className="font-medium">{product.name}</h4>
                     <div className="text-sm text-gray-500 flex space-x-2">
-                      <span>${product.regularPrice}</span>
+                      <span>Rs {product.regularPrice}</span>
                       {product.salePrice && (
-                        <span className="text-red-500">${product.salePrice}</span>
+                        <span className="text-red-500">Rs {product.salePrice}</span>
                       )}
                     </div>
                   </div>

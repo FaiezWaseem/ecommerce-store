@@ -453,11 +453,11 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                             
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-lg">
-                                ${currentPrice.toFixed(2)}
+                                Rs {currentPrice.toFixed(2)}
                               </span>
                               {originalPrice && (
                                 <span className="text-sm text-muted-foreground line-through">
-                                  ${originalPrice.toFixed(2)}
+                                  Rs {originalPrice.toFixed(2)}
                                 </span>
                               )}
                             </div>

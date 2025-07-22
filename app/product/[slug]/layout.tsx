@@ -13,8 +13,8 @@ interface Product {
     slug: string
     description?: string
     shortDescription?: string
-    regularPrice: number | null
-    salePrice?: number | null
+    regularPrice: string | number
+    salePrice?: string | number | null
     sku?: string
     status: string
     stockStatus: string
@@ -42,7 +42,8 @@ async function getProduct(slug: string): Promise<Product | null> {
             return null
         }
         
-        return await response.json()
+        const data = await response.json()
+        return data.success ? data.data : null
     } catch (error) {
         console.error('Error fetching product:', error)
         return null
@@ -55,16 +56,23 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     
     if (!product) {
         return {
-            title: 'Product Not Found',
-            description: 'The requested product could not be found.'
+            title: 'Product Not Found ~ Samreens',
+            description: 'The requested product could not be found. ~ Samreens'
         }
     }
     
-    const formatPrice = (price: number | null) => `Rs ${price || 0}`
-    const currentPrice = product.salePrice || product.regularPrice || 0
-    const hasDiscount = product.salePrice && product.regularPrice && product.salePrice < product.regularPrice
-    const discountPercent = hasDiscount && product.regularPrice
-        ? Math.round(((product.regularPrice - currentPrice) / product.regularPrice) * 100)
+    const formatPrice = (price: string | number | null | undefined) => {
+        const numPrice = typeof price === 'string' ? parseFloat(price) : (price || 0)
+        return `Rs ${numPrice}`
+    }
+    
+    const regularPriceNum = typeof product.regularPrice === 'string' ? parseFloat(product.regularPrice) : product.regularPrice
+    const salePriceNum = product.salePrice ? (typeof product.salePrice === 'string' ? parseFloat(product.salePrice) : product.salePrice) : null
+    
+    const currentPrice = salePriceNum || regularPriceNum || 0
+    const hasDiscount = salePriceNum && regularPriceNum && salePriceNum < regularPriceNum
+    const discountPercent = hasDiscount && regularPriceNum
+        ? Math.round(((regularPriceNum - currentPrice) / regularPriceNum) * 100)
         : 0
     
     const mainImage = product.images && product.images.length > 0 
@@ -87,14 +95,16 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         keywords: [
             product.name,
             product.category?.name || '',
+            'Samreens',
+            'Samreens bedding collection',
             'ecommerce',
             'online shopping',
             'buy online',
             product.sku || ''
         ].filter(Boolean).join(', '),
-        authors: [{ name: 'Your Store Name' }],
-        creator: 'Your Store Name',
-        publisher: 'Your Store Name',
+        authors: [{ name: 'Samreens' }],
+        creator: 'Samreens',
+        publisher: 'Samreens',
         robots: {
             index: product.status === 'ACTIVE',
             follow: true,
@@ -112,7 +122,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
             url: productUrl,
             title,
             description,
-            siteName: 'Your Store Name',
+            siteName: 'Samreens',
             images: mainImage ? [
                 {
                     url: mainImage.url,
@@ -127,7 +137,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
             card: 'summary_large_image',
             title,
             description,
-            creator: '@yourstorename',
+            creator: '@Samreens',
             images: mainImage ? [mainImage.url] : [],
         },
         alternates: {

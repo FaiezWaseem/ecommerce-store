@@ -18,10 +18,11 @@ import { Slider } from "@/components/ui/slider"
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Heart, Search, SlidersHorizontal, Star } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Product, Category, ProductSearchResponse } from "@/types/product"
 import { toast } from "sonner"
+
 
 export default function SearchPage() {
   const router = useRouter()
@@ -34,8 +35,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState([0, 1000])
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState([0, 20000])
   const [selectedRating, setSelectedRating] = useState<number | null>(null)
   const [sortBy, setSortBy] = useState('newest')
   const [pagination, setPagination] = useState({
@@ -45,17 +45,7 @@ export default function SearchPage() {
     totalPages: 0
   })
 
-  // Available brands (could be fetched from API in the future)
-  const brands = [
-    "Apple",
-    "Samsung",
-    "Sony",
-    "LG",
-    "Bose",
-    "Dell",
-    "Lenovo",
-    "Canon",
-  ]
+  // Filters configuration
 
   // Fetch categories
   const fetchCategories = useCallback(async () => {
@@ -80,11 +70,13 @@ export default function SearchPage() {
       if (selectedCategories.length > 0) params.set('category', selectedCategories[0]) // For simplicity, use first selected category
       if (priceRange[0] > 0) params.set('minPrice', priceRange[0].toString())
       if (priceRange[1] < 1000) params.set('maxPrice', priceRange[1].toString())
-      if (selectedBrands.length > 0) params.set('brands', selectedBrands.join(','))
       if (selectedRating) params.set('rating', selectedRating.toString())
       params.set('sort', sortBy)
       params.set('page', page.toString())
       params.set('limit', pagination.limit.toString())
+      
+      // Update URL query parameters - handled by handleSearch function now
+      // We don't need to update URL here as it's handled by the handleSearch function
 
       const response = await fetch(`/api/search?${params.toString()}`)
       if (response.ok) {
@@ -100,36 +92,114 @@ export default function SearchPage() {
     } finally {
       setLoading(false)
     }
-  }, [searchQuery, selectedCategories, priceRange, selectedBrands, selectedRating, sortBy, pagination.limit])
+  }, [searchQuery, selectedCategories, priceRange, selectedRating, sortBy, pagination.limit])
 
   // Handle search input
   const handleSearch = () => {
+    // Update URL with search query using Next.js router
+    const params = new URLSearchParams(searchParams.toString())
+    
+    if (searchQuery) {
+      params.set('q', searchQuery)
+    } else {
+      params.delete('q')
+    }
+    
+    // Use Next.js router to update URL
+    const newUrl = `${window.location.pathname}?${params.toString()}`
+    router.push(newUrl, { scroll: false })
+    
     searchProducts(1)
   }
 
   // Handle filter changes
   const handleCategoryChange = (categoryId: string, checked: boolean) => {
-    setSelectedCategories(prev =>
-      checked
-        ? [...prev, categoryId]
-        : prev.filter(id => id !== categoryId)
-    )
+    const newSelectedCategories = checked
+      ? [...selectedCategories, categoryId]
+      : selectedCategories.filter(id => id !== categoryId);
+    
+    setSelectedCategories(newSelectedCategories);
+    
+    // Update URL with category filter
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (newSelectedCategories.length > 0) {
+      params.set('category', newSelectedCategories[0]); // For simplicity, use first selected category
+    } else {
+      params.delete('category');
+    }
+    
+    // Use Next.js router to update URL
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    router.push(newUrl, { scroll: false });
+    
+    // Trigger search with updated filters
+    searchProducts(1);
   }
 
-  const handleBrandChange = (brand: string, checked: boolean) => {
-    setSelectedBrands(prev =>
-      checked
-        ? [...prev, brand]
-        : prev.filter(b => b !== brand)
-    )
+
+
+  // Handle price range changes
+  const handlePriceChange = (newPriceRange: number[]) => {
+    setPriceRange(newPriceRange);
+    
+    // Update URL with price range filter
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (newPriceRange[0] > 0) {
+      params.set('minPrice', newPriceRange[0].toString());
+    } else {
+      params.delete('minPrice');
+    }
+    
+    if (newPriceRange[1] < 20000) {
+      params.set('maxPrice', newPriceRange[1].toString());
+    } else {
+      params.delete('maxPrice');
+    }
+    
+    // Use Next.js router to update URL
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    router.push(newUrl, { scroll: false });
+    
+    // Trigger search with updated filters
+    searchProducts(1);
   }
 
   const handleRatingChange = (rating: number, checked: boolean) => {
-    setSelectedRating(checked ? rating : null)
+    const newRating = checked ? rating : null;
+    setSelectedRating(newRating);
+    
+    // Update URL with rating filter
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (newRating) {
+      params.set('rating', newRating.toString());
+    } else {
+      params.delete('rating');
+    }
+    
+    // Use Next.js router to update URL
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    router.push(newUrl, { scroll: false });
+    
+    // Trigger search with updated filters
+    searchProducts(1);
   }
 
   const handleSortChange = (value: string) => {
-    setSortBy(value)
+    setSortBy(value);
+    
+    // Update URL with sort filter
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('sort', value);
+    
+    // Use Next.js router to update URL
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    router.push(newUrl, { scroll: false });
+    
+    // Trigger search with updated filters
+    searchProducts(1);
   }
 
   const handlePageChange = (page: number) => {
@@ -142,20 +212,73 @@ export default function SearchPage() {
     fetchCategories()
   }, [])
 
-  // Search when filters change
+  // Search when filters change - using a ref to avoid dependency on searchProducts function
+  const isInitialMount = useRef(true);
+  
   useEffect(() => {
+    // Skip the initial render to avoid duplicate searches
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
     const timeoutId = setTimeout(() => {
       searchProducts(1)
     }, 500) // Debounce search
 
     return () => clearTimeout(timeoutId)
-  }, [searchProducts])
+  }, [searchQuery, selectedCategories, priceRange, selectedRating, sortBy]) // Depend on the actual state values instead of searchProducts
 
-  // Update search query from URL params
+  // Update filters from URL params - only run on initial load and when URL changes
   useEffect(() => {
+    // Update search query
     const query = searchParams.get('q') || ''
     setSearchQuery(query)
-  }, [searchParams])
+    
+    // Update category filter
+    const category = searchParams.get('category')
+    if (category) {
+      setSelectedCategories([category])
+    } else {
+      setSelectedCategories([])
+    }
+    
+    // Update price range filter
+    const minPrice = searchParams.get('minPrice')
+    const maxPrice = searchParams.get('maxPrice')
+    
+    // Only update price range if URL params exist and are different from current state
+    if (minPrice || maxPrice) {
+      const newPriceRange = [0, 20000] // Default values
+      
+      if (minPrice) {
+        newPriceRange[0] = parseInt(minPrice)
+      }
+      
+      if (maxPrice) {
+        newPriceRange[1] = parseInt(maxPrice)
+      }
+      
+      // Only update if values are different to avoid infinite loop
+      if (newPriceRange[0] !== priceRange[0] || newPriceRange[1] !== priceRange[1]) {
+        setPriceRange(newPriceRange)
+      }
+    }
+    
+    // Update rating filter
+    const rating = searchParams.get('rating')
+    if (rating) {
+      setSelectedRating(parseInt(rating))
+    } else {
+      setSelectedRating(null)
+    }
+    
+    // Update sort filter
+    const sort = searchParams.get('sort')
+    if (sort) {
+      setSortBy(sort)
+    }
+  }, [searchParams]) // Remove priceRange from dependencies
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -224,49 +347,29 @@ export default function SearchPage() {
                   <h4 className="mb-4 text-lg font-semibold">Price Range</h4>
                   <Slider
                     min={0}
-                    max={1000}
-                    step={10}
+                    max={20000}
+                    step={100}
                     value={priceRange}
-                    onValueChange={setPriceRange}
+                    onValueChange={handlePriceChange}
                     className="mb-4"
                   />
                   <div className="flex items-center justify-between">
                     <Input
                       type="number"
                       value={priceRange[0]}
-                      onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+                      onChange={(e) => handlePriceChange([parseInt(e.target.value), priceRange[1]])}
                       className="w-20"
                     />
                     <span>to</span>
                     <Input
                       type="number"
                       value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                      onChange={(e) => handlePriceChange([priceRange[0], parseInt(e.target.value)])}
                       className="w-20"
                     />
                   </div>
                 </div>
-                {/* Brands */}
-                <div>
-                  <h4 className="mb-4 text-lg font-semibold">Brands</h4>
-                  <div className="space-y-2">
-                    {brands.map((brand) => (
-                      <div key={brand} className="flex items-center">
-                        <Checkbox
-                          id={`mobile-brand-${brand}`}
-                          checked={selectedBrands.includes(brand)}
-                          onCheckedChange={(checked) => handleBrandChange(brand, checked as boolean)}
-                        />
-                        <label
-                          htmlFor={`mobile-brand-${brand}`}
-                          className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {brand}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+
                 {/* Rating */}
                 <div>
                   <h4 className="mb-4 text-lg font-semibold">Rating</h4>
@@ -333,49 +436,29 @@ export default function SearchPage() {
               <h3 className="mb-4 text-lg font-semibold">Price Range</h3>
               <Slider
                 min={0}
-                max={1000}
-                step={10}
+                max={20000}
+                step={100}
                 value={priceRange}
-                onValueChange={setPriceRange}
+                onValueChange={handlePriceChange}
                 className="mb-4"
               />
               <div className="flex items-center justify-between">
                 <Input
                   type="number"
                   value={priceRange[0]}
-                  onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+                  onChange={(e) => handlePriceChange([parseInt(e.target.value), priceRange[1]])}
                   className="w-20"
                 />
                 <span>to</span>
                 <Input
                   type="number"
                   value={priceRange[1]}
-                  onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                  onChange={(e) => handlePriceChange([priceRange[0], parseInt(e.target.value)])}
                   className="w-20"
                 />
               </div>
             </div>
-            {/* Brands */}
-            <div>
-              <h3 className="mb-4 text-lg font-semibold">Brands</h3>
-              <div className="space-y-2">
-                {brands.map((brand) => (
-                  <div key={brand} className="flex items-center">
-                    <Checkbox
-                      id={`desktop-brand-${brand}`}
-                      checked={selectedBrands.includes(brand)}
-                      onCheckedChange={(checked) => handleBrandChange(brand, checked as boolean)}
-                    />
-                    <label
-                      htmlFor={`desktop-brand-${brand}`}
-                      className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {brand}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
+
             {/* Rating */}
             <div>
               <h3 className="mb-4 text-lg font-semibold">Rating</h3>
@@ -431,6 +514,8 @@ export default function SearchPage() {
                 className="rounded-r-none"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search products"
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
               <Button className="rounded-l-none" onClick={handleSearch}>
                 <Search className="h-4 w-4" />
@@ -451,85 +536,89 @@ export default function SearchPage() {
           </div>
 
           {/* Product Grid */}
-          {loading ? (
-            <div className="grid gap-6 grid-cols-2 lg:grid-cols-3">
-              {Array(6)
-                .fill(null)
-                .map((_, index) => (
-                  <Card key={index} className="overflow-hidden">
-                    <div className="aspect-square bg-muted animate-pulse" />
-                    <CardContent className="p-4">
-                      <div className="h-4 bg-muted animate-pulse rounded mb-2" />
-                      <div className="h-3 bg-muted animate-pulse rounded mb-2" />
-                      <div className="h-4 bg-muted animate-pulse rounded" />
-                    </CardContent>
+          <section aria-label="Search Results" role="main">
+            {loading ? (
+              <div className="grid gap-6 grid-cols-2 lg:grid-cols-3" aria-label="Loading products">
+                {Array(6)
+                  .fill(null)
+                  .map((_, index) => (
+                    <Card key={index} className="overflow-hidden">
+                      <div className="aspect-square bg-muted animate-pulse" />
+                      <CardContent className="p-4">
+                        <div className="h-4 bg-muted animate-pulse rounded mb-2" />
+                        <div className="h-3 bg-muted animate-pulse rounded mb-2" />
+                        <div className="h-4 bg-muted animate-pulse rounded" />
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            ) : products.length > 0 ? (
+              <div className="grid gap-6 grid-cols-2 lg:grid-cols-3">
+                {products.map((product) => (
+                  <Card key={product.id} className="overflow-hidden">
+                    <Link href={`/product/${product.slug}`} key={product.name} >
+                      <div className="relative aspect-square">
+                        {product.images && product.images.length > 0 ? (
+                          <Image
+                            src={product.images[0].url}
+                            alt={`${product.name} - Product Image`}
+                            fill
+                            className="object-cover transition-transform hover:scale-105"
+                            loading="lazy"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <span className="text-muted-foreground">No Image</span>
+                          </div>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 h-8 w-8 rounded-full bg-white"
+                        >
+                          <Heart className="h-4 w-4" />
+                          <span className="sr-only">Add to wishlist</span>
+                        </Button>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold truncate">{product.name}</h3>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-primary font-bold">Rs{product.salePrice || product.regularPrice}</span>
+                          {(product.regularPrice && product.salePrice && product.regularPrice !== product.salePrice) && (
+                            <span className="text-sm text-muted-foreground line-through">Rs{product.regularPrice}</span>
+                          )}
+                        </div>
+                        <div className="mt-2 flex items-center gap-1">
+                          {Array(5)
+                            .fill(null)
+                            .map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${i < Math.floor(0)
+                                  ? "fill-primary text-primary"
+                                  : "text-muted-foreground"
+                                  }`}
+                              />
+                            ))}
+                          <span className="text-sm text-muted-foreground">({'0.0'})</span>
+                        </div>
+                      </CardContent>
+                    </Link>
                   </Card>
                 ))}
-            </div>
-          ) : products.length > 0 ? (
-            <div className="grid gap-6 grid-cols-2 lg:grid-cols-3">
-              {products.map((product) => (
-                <Card key={product.id} className="overflow-hidden">
-                  <Link href={`/product/${product.slug}`} key={product.name} >
-                    <div className="relative aspect-square">
-                      {product.images && product.images.length > 0 ? (
-                        <Image
-                          src={product.images[0].url}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-muted flex items-center justify-center">
-                          <span className="text-muted-foreground">No Image</span>
-                        </div>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-2 h-8 w-8 rounded-full bg-white"
-                      >
-                        <Heart className="h-4 w-4" />
-                        <span className="sr-only">Add to wishlist</span>
-                      </Button>
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold truncate">{product.name}</h3>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-primary font-bold">Rs{product.salePrice || product.regularPrice }</span>
-                        {(product.regularPrice && product.salePrice && product.regularPrice !== product.salePrice) && (
-                          <span className="text-sm text-muted-foreground line-through">Rs{product.regularPrice}</span>
-                        )}
-                      </div>
-                      <div className="mt-2 flex items-center gap-1">
-                        {Array(5)
-                          .fill(null)
-                          .map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${i < Math.floor(0)
-                                ? "fill-primary text-primary"
-                                : "text-muted-foreground"
-                                }`}
-                            />
-                          ))}
-                        <span className="text-sm text-muted-foreground">({ '0.0'})</span>
-                      </div>
-                    </CardContent>
-                  </Link>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <h3 className="text-lg font-semibold mb-2">No products found</h3>
-              <p className="text-muted-foreground">Try adjusting your search criteria or filters.</p>
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="text-center py-12" role="status" aria-live="polite">
+                <h3 className="text-lg font-semibold mb-2">No products found</h3>
+                <p className="text-muted-foreground">Try adjusting your search criteria or filters.</p>
+              </div>
+            )}
+          </section>
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-center space-x-2">
+            <nav aria-label="Search results pagination" className="mt-8 flex items-center justify-center space-x-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -565,13 +654,104 @@ export default function SearchPage() {
                 Next
                 <ChevronRight className="h-4 w-4" />
               </Button>
-            </div>
+            </nav>
           )}
         </main>
       </div >
 
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Your Store",
+            "url": typeof window !== 'undefined' ? window.location.origin : '',
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": typeof window !== 'undefined' ? `${window.location.origin}/search?q={search_term_string}` : '/search?q={search_term_string}'
+              },
+              "query-input": "required name=search_term_string"
+            }
+          })
+        }}
+      />
+
+      {/* Product List Structured Data */}
+      {products.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              "name": searchQuery ? `Search Results for "${searchQuery}"` : "Product Search Results",
+              "description": searchQuery ? `Products matching "${searchQuery}"` : "Browse our product catalog",
+              "numberOfItems": products.length,
+              "itemListElement": products.map((product, index) => {
+                const regularPriceNum = typeof product.regularPrice === 'string' ? parseFloat(product.regularPrice) : (product.regularPrice || 0)
+                const salePriceNum = typeof product.salePrice === 'string' ? parseFloat(product.salePrice) : (product.salePrice || 0)
+                const currentPrice = salePriceNum > 0 ? salePriceNum : regularPriceNum
+
+                return {
+                  "@type": "ListItem",
+                  "position": index + 1,
+                  "item": {
+                    "@type": "Product",
+                    "name": product.name,
+                    "description": product.description || product.name,
+                    "image": product.images && product.images.length > 0 ? product.images[0].url : '',
+                    "url": typeof window !== 'undefined' ? `${window.location.origin}/product/${product.slug}` : `/product/${product.slug}`,
+                    "sku": product.id,
+                    "brand": {
+                      "@type": "Brand",
+                      "name": "Your Store"
+                    },
+                    "offers": {
+                      "@type": "Offer",
+                      "price": currentPrice.toFixed(2),
+                      "priceCurrency": "PKR",
+                      "availability": product.stockQuantity && product.stockQuantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                      "url": typeof window !== 'undefined' ? `${window.location.origin}/product/${product.slug}` : `/product/${product.slug}`
+                    }
+                  }
+                }
+              })
+            })
+          }}
+        />
+      )}
+
       {/* Footer */}
       < Footer />
-    </div >
+
+      {/* Breadcrumb Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": typeof window !== 'undefined' ? window.location.origin : ''
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": searchQuery ? `Search: ${searchQuery}` : "Search",
+                "item": typeof window !== 'undefined' ? window.location.href : ''
+              }
+            ]
+          })
+        }}
+      />
+    </div>
   )
 }

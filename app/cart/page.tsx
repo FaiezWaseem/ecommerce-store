@@ -318,7 +318,7 @@ export default function CartPage() {
                                                     <div>
                                                         <h3 className="font-medium">{item.product.name}</h3>
                                                         <p className="text-sm text-muted-foreground">
-                                                            ${Number(item.product)}
+                                                            Rs {Number(item.product)}
                                                         </p>
                                                     </div>
                                                     <Button

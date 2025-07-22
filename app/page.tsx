@@ -243,9 +243,9 @@ export default async function Home() {
                         <div className="p-4">
                           <h3 className="font-semibold truncate text-app_red">{item.title || item.name}</h3>
                           <div className="flex items-center gap-2 mt-2">
-                            <span className="text-primary font-bold">${item.sale_price || item.salePrice || item.price}</span>
+                            <span className="text-primary font-bold">Rs {item.sale_price || item.salePrice || item.price}</span>
                             {(item.price && item.sale_price && item.price !== item.sale_price) && (
-                              <span className="text-sm text-muted-foreground line-through">${item.price}</span>
+                              <span className="text-sm text-muted-foreground line-through">Rs {item.price}</span>
                             )}
                           </div>
                         </div>
@@ -306,14 +306,14 @@ export default async function Home() {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {(homeData.products.length > 0 ? homeData.products.slice(0, 8) : [
-                    { name: "Gaming Console", price: "$99.99", rating: 5 },
-                    { name: "DSLR Camera", price: "$699.99", rating: 4 },
-                    { name: "Gaming Laptop", price: "$999.99", rating: 5 },
-                    { name: "Running Shoes", price: "$79.99", rating: 4 },
-                    { name: "RC Car", price: "$49.99", rating: 5 },
-                    { name: "Sports Shoes", price: "$89.99", rating: 4 },
-                    { name: "Game Controller", price: "$59.99", rating: 5 },
-                    { name: "Winter Jacket", price: "$129.99", rating: 4 },
+                    { name: "Gaming Console", price: "Rs 99.99", rating: 5 },
+                    { name: "DSLR Camera", price: "Rs 699.99", rating: 4 },
+                    { name: "Gaming Laptop", price: "Rs 999.99", rating: 5 },
+                    { name: "Running Shoes", price: "Rs 79.99", rating: 4 },
+                    { name: "RC Car", price: "Rs 49.99", rating: 5 },
+                    { name: "Sports Shoes", price: "Rs 89.99", rating: 4 },
+                    { name: "Game Controller", price: "Rs 59.99", rating: 5 },
+                    { name: "Winter Jacket", price: "Rs 129.99", rating: 4 },
                   ]).map((product, index) => (
                     <Link href={`/product/${product.id || index}`} key={product.id || index}>
                       <Card key={product.id || index}>
@@ -344,11 +344,11 @@ export default async function Home() {
                             <h3 className="font-semibold truncate">{product.name}</h3>
                             <div className="flex items-center gap-2 mt-2">
                               <span className="text-primary font-bold text-app_red">
-                                ${product.salePrice || product.price}
+                                Rs {product.salePrice || product.price}
                               </span>
                               {product.salePrice && product.price !== product.salePrice && (
                                 <span className="text-sm text-muted-foreground line-through">
-                                  ${product.price}
+                                  Rs {product.price}
                                 </span>
                               )}
                             </div>
@@ -452,7 +452,7 @@ export default async function Home() {
                   <Truck className="h-8 w-8" />
                 </div>
                 <h3 className="font-semibold mb-2">FREE AND FAST DELIVERY</h3>
-                <p className="text-sm text-muted-foreground">Free delivery for all orders over $140</p>
+                <p className="text-sm text-muted-foreground">Free delivery for all orders over Rs 140</p>
               </div>
               <div className="flex flex-col items-center text-center">
                 <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
