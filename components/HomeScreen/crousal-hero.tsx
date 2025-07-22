@@ -38,7 +38,7 @@ export default function CarouselHero(props: CarouselHeroProps) {
                     }
 
                     return (
-                        <CarouselItem >
+                        <CarouselItem key={banner.id}>
                             <div style={{backgroundColor: banner.bgColor}} className="relative h-[300px] md:h-[400px] w-full rounded-lg overflow-hidden">
                                 <div className="absolute inset-0 flex items-center justify-between p-6 md:p-12">
                                     <div style={{color: banner.textColor}} className="space-y-4">

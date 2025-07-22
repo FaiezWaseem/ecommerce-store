@@ -3,14 +3,14 @@ import { Suspense } from 'react'
 
 interface SearchLayoutProps {
   children: React.ReactNode
-  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 export async function generateMetadata(
-  { searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }
+  { params }: { params: {} }
 ): Promise<Metadata> {
-  const searchQuery = searchParams?.q as string || ''
-  const category = searchParams?.category as string || ''
+  // Since we can't use searchParams in layout, we'll use a default approach
+  const searchQuery = ''
+  const category = ''
   
   // Base metadata
   const baseTitle = 'Search Products ~ Samreens'

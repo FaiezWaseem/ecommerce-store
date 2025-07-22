@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import Header from '@/components/header';
@@ -48,8 +48,8 @@ interface Order {
   };
 }
 
-
-export default function OrderConfirmationPage() {
+// Create a separate component that uses useSearchParams
+function OrderConfirmation() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -278,5 +278,20 @@ export default function OrderConfirmationPage() {
 
       <Footer />
     </div>
+  );
+}
+
+// Wrap the component that uses useSearchParams in a Suspense boundary
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background">
+      <Header />
+      <div className="container py-8">
+        <div className="text-center">Loading order details...</div>
+      </div>
+      <Footer />
+    </div>}>
+      <OrderConfirmation />
+    </Suspense>
   );
 }
