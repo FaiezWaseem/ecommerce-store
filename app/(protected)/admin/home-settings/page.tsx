@@ -50,7 +50,8 @@ import {
   Users,
   ShoppingCart,
   Home,
-  Sparkles
+  Sparkles,
+  Pencil
 } from 'lucide-react'
 import { Spinner } from '@nextui-org/react'
 import Image from 'next/image'
@@ -142,6 +143,20 @@ interface SaleBanner {
   endDate?: string
 }
 
+interface FlashSaleProduct {
+  id: string
+  productId: string
+  product: {
+    id: string
+    name: string
+    regularPrice: number
+    salePrice?: number
+    images: { url: string }[]
+  }
+  isActive: boolean
+  sortOrder: number
+}
+
 export default function HomeSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -151,6 +166,8 @@ export default function HomeSettingsPage() {
   const [featuredSections, setFeaturedSections] = useState<FeaturedSection[]>([])
   const [headlineMessages, setHeadlineMessages] = useState<HeadlineMessage[]>([])
   const [saleBanners, setSaleBanners] = useState<SaleBanner[]>([])
+  const [flashSaleProducts, setFlashSaleProducts] = useState<FlashSaleProduct[]>([])
+  const [flashSaleEndTime, setFlashSaleEndTime] = useState<string>('')
   const [activeTab, setActiveTab] = useState('general')
 
   // Modal states
@@ -159,6 +176,7 @@ export default function HomeSettingsPage() {
   const [isFeaturedModalOpen, setIsFeaturedModalOpen] = useState(false)
   const [isHeadlineModalOpen, setIsHeadlineModalOpen] = useState(false)
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false)
+  const [isFlashSaleModalOpen, setIsFlashSaleModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [headlineForm, setHeadlineForm] = useState({
     message: '',
@@ -166,6 +184,19 @@ export default function HomeSettingsPage() {
     isActive: true,
     startDate: '',
     endDate: ''
+  })
+  const [carouselForm, setCarouselForm] = useState({
+    title: '',
+    subtitle: '',
+    description: '',
+    buttonText: '',
+    buttonLink: '',
+    image: '',
+    logoImage: '',
+    bgColor: '#000000',
+    textColor: '#ffffff',
+    isActive: true,
+    position: 'CENTER' as 'LEFT' | 'CENTER' | 'RIGHT'
   })
 
   useEffect(() => {
@@ -175,18 +206,23 @@ export default function HomeSettingsPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [settingsRes, carouselRes, promotionalRes, featuredRes, headlineRes, saleRes] = await Promise.all([
+      const [settingsRes, carouselRes, promotionalRes, featuredRes, headlineRes, saleRes, flashSaleRes] = await Promise.all([
         fetch('/api/home-settings'),
         fetch('/api/home-settings/carousel'),
         fetch('/api/home-settings/promotional'),
         fetch('/api/home-settings/featured'),
         fetch('/api/home-settings/headline'),
-        fetch('/api/home-settings/sale')
+        fetch('/api/home-settings/sale'),
+        fetch('/api/home-settings/flash-sale')
       ])
 
       if (settingsRes.ok) {
         const settingsData = await settingsRes.json()
         setSettings(settingsData)
+        // Set flash sale end time if available
+        if (settingsData.flashSaleEndTime) {
+          setFlashSaleEndTime(new Date(settingsData.flashSaleEndTime).toISOString().slice(0, 16))
+        }
       }
       if (carouselRes.ok) {
         const carouselData = await carouselRes.json()
@@ -208,6 +244,10 @@ export default function HomeSettingsPage() {
         const saleData = await saleRes.json()
         setSaleBanners(saleData)
       }
+      if (flashSaleRes.ok) {
+        const flashSaleData = await flashSaleRes.json()
+        setFlashSaleProducts(flashSaleData)
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
       toast.error('Failed to load home page settings')
@@ -218,16 +258,23 @@ export default function HomeSettingsPage() {
 
   const saveSettings = async () => {
     if (!settings) return
-    
+
     try {
       setSaving(true)
+      // Update flash sale end time in settings
+      const updatedSettings = {
+        ...settings,
+        flashSaleEndTime: flashSaleEndTime ? new Date(flashSaleEndTime).toISOString() : null
+      }
+      
       const response = await fetch('/api/home-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+        body: JSON.stringify(updatedSettings)
       })
 
       if (response.ok) {
+        setSettings(updatedSettings)
         toast.success('Settings saved successfully')
       } else {
         throw new Error('Failed to save settings')
@@ -307,6 +354,224 @@ export default function HomeSettingsPage() {
     } catch (error) {
       console.error('Error deleting message:', error)
       toast.error('Failed to delete message')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleSaveCarouselBanner = async () => {
+    try {
+      setSaving(true)
+
+      const bannerData = {
+        title: carouselForm.title,
+        subtitle: carouselForm.subtitle,
+        description: carouselForm.description,
+        buttonText: carouselForm.buttonText,
+        buttonLink: carouselForm.buttonLink,
+        image: carouselForm.image,
+        logoImage: carouselForm.logoImage,
+        bgColor: carouselForm.bgColor,
+        textColor: carouselForm.textColor,
+        isActive: carouselForm.isActive,
+        position: carouselForm.position
+      }
+
+      const url = editingItem ? `/api/home-settings/carousel/${editingItem.id}` : '/api/home-settings/carousel'
+      const method = editingItem ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bannerData)
+      })
+
+      if (response.ok) {
+        toast.success(`Banner ${editingItem ? 'updated' : 'created'} successfully`)
+        setIsCarouselModalOpen(false)
+        setEditingItem(null)
+        setCarouselForm({
+          title: '',
+          subtitle: '',
+          description: '',
+          buttonText: '',
+          buttonLink: '',
+          image: '',
+          logoImage: '',
+          bgColor: '#000000',
+          textColor: '#ffffff',
+          isActive: true,
+          position: 'CENTER'
+        })
+        fetchData() // Refresh the data
+      } else {
+        throw new Error(`Failed to ${editingItem ? 'update' : 'create'} banner`)
+      }
+    } catch (error) {
+      console.error('Error saving banner:', error)
+      toast.error(`Failed to ${editingItem ? 'update' : 'create'} banner`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteCarouselBanner = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this banner?')) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/home-settings/carousel/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        toast.success('Banner deleted successfully')
+        fetchData() // Refresh the data
+      } else {
+        throw new Error('Failed to delete banner')
+      }
+    } catch (error) {
+      console.error('Error deleting banner:', error)
+      toast.error('Failed to delete banner')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleAddFlashSaleProduct = async (productId: string) => {
+    try {
+      const response = await fetch('/api/home-settings/flash-sale', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId }),
+      })
+
+      if (response.ok) {
+        const newProduct = await response.json()
+        setFlashSaleProducts(prev => [...prev, newProduct])
+        toast.success('Product added to flash sale successfully')
+      } else {
+        toast.error('Failed to add product to flash sale')
+      }
+    } catch (error) {
+      console.error('Error adding product to flash sale:', error)
+      toast.error('An error occurred while adding product to flash sale')
+    }
+  }
+
+  const handleDeleteFlashSaleProduct = async (id: string) => {
+    try {
+      const response = await fetch(`/api/home-settings/flash-sale/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setFlashSaleProducts(prev => prev.filter(product => product.id !== id))
+        toast.success('Product removed from flash sale successfully')
+      } else {
+        toast.error('Failed to remove product from flash sale')
+      }
+    } catch (error) {
+      console.error('Error removing product from flash sale:', error)
+      toast.error('An error occurred while removing product from flash sale')
+    }
+  }
+
+  const handleUpdateFlashSaleProduct = async (id: string, data: { isActive: boolean, sortOrder: number }) => {
+    try {
+      const response = await fetch(`/api/home-settings/flash-sale/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (response.ok) {
+        const updatedProduct = await response.json()
+        setFlashSaleProducts(prev => 
+          prev.map(product => product.id === id ? updatedProduct : product)
+        )
+        toast.success('Flash sale product updated successfully')
+      } else {
+        toast.error('Failed to update flash sale product')
+      }
+    } catch (error) {
+      console.error('Error updating flash sale product:', error)
+      toast.error('An error occurred while updating flash sale product')
+    }
+  }
+
+  const handleSaveSaleBanner = async (banner: SaleBanner) => {
+    try {
+      setSaving(true)
+
+      const bannerData = {
+        title: banner.title,
+        description: banner.description,
+        discount: banner.discount,
+        image: banner.image,
+        bgColor: banner.bgColor,
+        textColor: banner.textColor,
+        buttonText: banner.buttonText,
+        buttonLink: banner.buttonLink,
+        isActive: banner.isActive,
+        startDate: banner.startDate ? new Date(banner.startDate).toISOString() : null,
+        endDate: banner.endDate ? new Date(banner.endDate).toISOString() : null
+      }
+
+      const url = banner.id ? `/api/home-settings/sale-banner/${banner.id}` : '/api/home-settings/sale-banner'
+      const method = banner.id ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bannerData)
+      })
+
+      if (response.ok) {
+        const updatedBanner = await response.json()
+        
+        if (banner.id) {
+          // Update existing banner
+          setSaleBanners(prev => prev.map(item => item.id === banner.id ? updatedBanner : item))
+          toast.success('Sale banner updated successfully')
+        } else {
+          // Add new banner
+          setSaleBanners(prev => [...prev, updatedBanner])
+          toast.success('Sale banner created successfully')
+        }
+      } else {
+        throw new Error(`Failed to ${banner.id ? 'update' : 'create'} sale banner`)
+      }
+    } catch (error) {
+      console.error('Error saving sale banner:', error)
+      toast.error(`Failed to ${banner.id ? 'update' : 'create'} sale banner`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteSaleBanner = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this sale banner?')) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/home-settings/sale-banner/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        toast.success('Sale banner deleted successfully')
+        setSaleBanners(prev => prev.filter(banner => banner.id !== id))
+      } else {
+        throw new Error('Failed to delete sale banner')
+      }
+    } catch (error) {
+      console.error('Error deleting sale banner:', error)
+      toast.error('Failed to delete sale banner')
     } finally {
       setSaving(false)
     }
@@ -520,12 +785,30 @@ export default function HomeSettingsPage() {
                               variant="outline"
                               onClick={() => {
                                 setEditingItem(banner)
+                                setCarouselForm({
+                                  title: banner.title,
+                                  subtitle: banner.subtitle || '',
+                                  description: banner.description || '',
+                                  buttonText: banner.buttonText || '',
+                                  buttonLink: banner.buttonLink || '',
+                                  image: banner.image || '',
+                                  logoImage: banner.logoImage || '',
+                                  bgColor: banner.bgColor,
+                                  textColor: banner.textColor,
+                                  isActive: banner.isActive,
+                                  position: banner.position
+                                })
                                 setIsCarouselModalOpen(true)
                               }}
                             >
                               <Edit className="w-3 h-3" />
                             </Button>
-                            <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDeleteCarouselBanner(banner.id)}
+                            >
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
@@ -571,16 +854,16 @@ export default function HomeSettingsPage() {
                   Headline Messages
                 </CardTitle>
                 <Button onClick={() => {
-                   setHeadlineForm({
-                     message: '',
-                     type: 'INFO',
-                     isActive: true,
-                     startDate: '',
-                     endDate: ''
-                   })
-                   setEditingItem(null)
-                   setIsHeadlineModalOpen(true)
-                 }} className="bg-blue-600 hover:bg-blue-700">
+                  setHeadlineForm({
+                    message: '',
+                    type: 'INFO',
+                    isActive: true,
+                    startDate: '',
+                    endDate: ''
+                  })
+                  setEditingItem(null)
+                  setIsHeadlineModalOpen(true)
+                }} className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Message
                 </Button>
@@ -592,16 +875,16 @@ export default function HomeSettingsPage() {
                   <Megaphone className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-600 dark:text-gray-400">No headline messages found</p>
                   <Button onClick={() => {
-                     setHeadlineForm({
-                       message: '',
-                       type: 'INFO',
-                       isActive: true,
-                       startDate: '',
-                       endDate: ''
-                     })
-                     setEditingItem(null)
-                     setIsHeadlineModalOpen(true)
-                   }} variant="outline" className="mt-4">
+                    setHeadlineForm({
+                      message: '',
+                      type: 'INFO',
+                      isActive: true,
+                      startDate: '',
+                      endDate: ''
+                    })
+                    setEditingItem(null)
+                    setIsHeadlineModalOpen(true)
+                  }} variant="outline" className="mt-4">
                     Create your first message
                   </Button>
                 </div>
@@ -612,13 +895,12 @@ export default function HomeSettingsPage() {
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={`w-3 h-3 rounded-full ${
-                              message.type === 'SUCCESS' ? 'bg-green-500' :
-                              message.type === 'WARNING' ? 'bg-yellow-500' :
-                              message.type === 'ERROR' ? 'bg-red-500' :
-                              message.type === 'SALE' ? 'bg-purple-500' :
-                              'bg-blue-500'
-                            }`} />
+                            <div className={`w-3 h-3 rounded-full ${message.type === 'SUCCESS' ? 'bg-green-500' :
+                                message.type === 'WARNING' ? 'bg-yellow-500' :
+                                  message.type === 'ERROR' ? 'bg-red-500' :
+                                    message.type === 'SALE' ? 'bg-purple-500' :
+                                      'bg-blue-500'
+                              }`} />
                             <div className="flex-1">
                               <p className="font-medium">{message.message}</p>
                               <div className="flex items-center gap-4 mt-1">
@@ -659,9 +941,9 @@ export default function HomeSettingsPage() {
                             >
                               <Edit className="w-3 h-3" />
                             </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
+                            <Button
+                              size="sm"
+                              variant="outline"
                               className="text-red-600 hover:text-red-700"
                               onClick={() => handleDeleteHeadlineMessage(message.id)}
                             >
@@ -678,15 +960,216 @@ export default function HomeSettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="sales">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sale Banners</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 dark:text-gray-400">Sale banners management coming soon...</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="sales" className="space-y-6">
+           <Card>
+             <CardHeader>
+               <div className="flex items-center justify-between">
+                 <CardTitle className="flex items-center gap-2">
+                   <Percent className="w-5 h-5" />
+                   Flash Sale Products
+                 </CardTitle>
+                 <Button onClick={() => setIsFlashSaleModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+                   <Plus className="w-4 h-4 mr-2" />
+                   Add Product
+                 </Button>
+               </div>
+             </CardHeader>
+             <CardContent>
+               <div className="space-y-4">
+                 <div className="flex items-center justify-between">
+                   <Label htmlFor="flashSaleEndTime">Flash Sale End Time</Label>
+                   <div className="flex items-center gap-2">
+                     <Input
+                       id="flashSaleEndTime"
+                       type="datetime-local"
+                       value={flashSaleEndTime}
+                       onChange={(e) => setFlashSaleEndTime(e.target.value)}
+                       className="w-auto"
+                     />
+                   </div>
+                 </div>
+                 
+                 <div className="flex items-center space-x-2">
+                   <Switch
+                     id="flashSaleEnabled"
+                     checked={settings?.flashSaleEnabled || false}
+                     onCheckedChange={(checked) => {
+                       if (settings) {
+                         setSettings({ ...settings, flashSaleEnabled: checked })
+                       }
+                     }}
+                   />
+                   <Label htmlFor="flashSaleEnabled">Enable Flash Sale</Label>
+                 </div>
+                 
+                 {flashSaleProducts.length === 0 ? (
+                   <div className="text-center py-8">
+                     <ShoppingCart className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                     <p className="text-gray-600 dark:text-gray-400">No flash sale products found</p>
+                     <Button onClick={() => setIsFlashSaleModalOpen(true)} variant="outline" className="mt-4">
+                       Add your first flash sale product
+                     </Button>
+                   </div>
+                 ) : (
+                   <div className="space-y-4">
+                     {flashSaleProducts.map((item) => (
+                       <Card key={item.id} className="overflow-hidden">
+                         <CardContent className="p-4">
+                           <div className="flex items-center gap-4">
+                             <div className="w-16 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                               {item.product.images && item.product.images[0] ? (
+                                 <Image
+                                   src={item.product.images[0].url}
+                                   alt={item.product.name}
+                                   width={64}
+                                   height={64}
+                                   className="object-cover w-full h-full"
+                                 />
+                               ) : (
+                                 <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                   <Package size={24} />
+                                 </div>
+                               )}
+                             </div>
+                             <div className="flex-1">
+                               <h3 className="font-medium">{item.product.name}</h3>
+                               <div className="flex items-center gap-2 mt-1">
+                                 <span className="text-gray-600 line-through">
+                                   ${item.product.regularPrice}
+                                 </span>
+                                 {item.product.salePrice && (
+                                   <span className="text-red-600 font-medium">
+                                     ${item.product.salePrice}
+                                   </span>
+                                 )}
+                               </div>
+                             </div>
+                             <div className="flex items-center gap-2">
+                               <Switch
+                                 checked={item.isActive}
+                                 onCheckedChange={(checked) => 
+                                   handleUpdateFlashSaleProduct(item.id, { isActive: checked, sortOrder: item.sortOrder })
+                                 }
+                               />
+                               <Button
+                                 size="sm"
+                                 variant="outline"
+                                 className="text-red-600 hover:text-red-700"
+                                 onClick={() => handleDeleteFlashSaleProduct(item.id)}
+                               >
+                                 <Trash2 className="w-3 h-3" />
+                               </Button>
+                             </div>
+                           </div>
+                         </CardContent>
+                       </Card>
+                     ))}
+                   </div>
+                 )}
+               </div>
+             </CardContent>
+           </Card>
+           
+           <Card>
+             <CardHeader>
+               <div className="flex items-center justify-between">
+                 <CardTitle className="flex items-center gap-2">
+                   <Tag className="w-5 h-5" />
+                   Sale Banners
+                 </CardTitle>
+                 <Button onClick={() => {
+                   setEditingItem(null)
+                   setIsSaleModalOpen(true)
+                 }} className="bg-blue-600 hover:bg-blue-700">
+                   <Plus className="w-4 h-4 mr-2" />
+                   Add Banner
+                 </Button>
+               </div>
+             </CardHeader>
+             <CardContent>
+               {saleBanners.length === 0 ? (
+                 <div className="text-center py-8">
+                   <Tag className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                   <p className="text-gray-600 dark:text-gray-400">No sale banners found</p>
+                   <Button 
+                     onClick={() => {
+                       setEditingItem(null)
+                       setIsSaleModalOpen(true)
+                     }} 
+                     variant="outline" 
+                     className="mt-4"
+                   >
+                     Add your first sale banner
+                   </Button>
+                 </div>
+               ) : (
+                 <div className="space-y-4">
+                   {saleBanners.map((banner) => (
+                     <Card key={banner.id} className="overflow-hidden">
+                       <CardContent className="p-4">
+                         <div className="flex items-center gap-4">
+                           <div 
+                             className="w-16 h-16 rounded overflow-hidden flex-shrink-0 flex items-center justify-center" 
+                             style={{ backgroundColor: banner.bgColor, color: banner.textColor }}
+                           >
+                             {banner.image ? (
+                               <Image
+                                 src={banner.image}
+                                 alt={banner.title}
+                                 width={64}
+                                 height={64}
+                                 className="object-cover w-full h-full"
+                               />
+                             ) : (
+                               <Tag size={24} />
+                             )}
+                           </div>
+                           <div className="flex-1">
+                             <h3 className="font-medium">{banner.title}</h3>
+                             {banner.description && (
+                               <p className="text-sm text-gray-500">{banner.description}</p>
+                             )}
+                             {banner.discount && (
+                               <span className="inline-block px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded mt-1">
+                                 {banner.discount}
+                               </span>
+                             )}
+                           </div>
+                           <div className="flex items-center gap-2">
+                             <Switch
+                               checked={banner.isActive}
+                               onCheckedChange={(checked) => {
+                                 const updatedBanner = { ...banner, isActive: checked }
+                                 handleSaveSaleBanner(updatedBanner)
+                               }}
+                             />
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               onClick={() => {
+                                 setEditingItem(banner)
+                                 setIsSaleModalOpen(true)
+                               }}
+                             >
+                               <Pencil className="w-3 h-3" />
+                             </Button>
+                             <Button
+                               size="sm"
+                               variant="outline"
+                               className="text-red-600 hover:text-red-700"
+                               onClick={() => handleDeleteSaleBanner(banner.id)}
+                             >
+                               <Trash2 className="w-3 h-3" />
+                             </Button>
+                           </div>
+                         </div>
+                       </CardContent>
+                     </Card>
+                   ))}
+                 </div>
+               )}
+             </CardContent>
+           </Card>
         </TabsContent>
       </Tabs>
 
@@ -701,76 +1184,76 @@ export default function HomeSettingsPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-               <Label htmlFor="message">Message</Label>
-               <Textarea 
-                 id="message" 
-                 placeholder="Enter your headline message" 
-                 value={headlineForm.message}
-                 onChange={(e) => setHeadlineForm({ ...headlineForm, message: e.target.value })}
-               />
-             </div>
-             <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                 <Label htmlFor="messageType">Message Type</Label>
-                 <Select value={headlineForm.type} onValueChange={(value) => setHeadlineForm({ ...headlineForm, type: value as any })}>
-                   <SelectTrigger>
-                     <SelectValue placeholder="Select message type" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="INFO">Info</SelectItem>
-                     <SelectItem value="SUCCESS">Success</SelectItem>
-                     <SelectItem value="WARNING">Warning</SelectItem>
-                     <SelectItem value="ERROR">Error</SelectItem>
-                     <SelectItem value="SALE">Sale</SelectItem>
-                   </SelectContent>
-                 </Select>
-               </div>
-               <div className="space-y-2">
-                 <Label className="flex items-center gap-2">
-                   <Switch 
-                     checked={headlineForm.isActive} 
-                     onCheckedChange={(checked) => setHeadlineForm({ ...headlineForm, isActive: checked })}
-                   />
-                   Active
-                 </Label>
-               </div>
-             </div>
-             <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                 <Label htmlFor="startDate">Start Date (Optional)</Label>
-                 <Input 
-                   id="startDate" 
-                   type="datetime-local" 
-                   value={headlineForm.startDate}
-                   onChange={(e) => setHeadlineForm({ ...headlineForm, startDate: e.target.value })}
-                 />
-               </div>
-               <div className="space-y-2">
-                 <Label htmlFor="endDate">End Date (Optional)</Label>
-                 <Input 
-                   id="endDate" 
-                   type="datetime-local" 
-                   value={headlineForm.endDate}
-                   onChange={(e) => setHeadlineForm({ ...headlineForm, endDate: e.target.value })}
-                 />
-               </div>
-             </div>
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                placeholder="Enter your headline message"
+                value={headlineForm.message}
+                onChange={(e) => setHeadlineForm({ ...headlineForm, message: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="messageType">Message Type</Label>
+                <Select value={headlineForm.type} onValueChange={(value) => setHeadlineForm({ ...headlineForm, type: value as any })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select message type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="INFO">Info</SelectItem>
+                    <SelectItem value="SUCCESS">Success</SelectItem>
+                    <SelectItem value="WARNING">Warning</SelectItem>
+                    <SelectItem value="ERROR">Error</SelectItem>
+                    <SelectItem value="SALE">Sale</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Switch
+                    checked={headlineForm.isActive}
+                    onCheckedChange={(checked) => setHeadlineForm({ ...headlineForm, isActive: checked })}
+                  />
+                  Active
+                </Label>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Start Date (Optional)</Label>
+                <Input
+                  id="startDate"
+                  type="datetime-local"
+                  value={headlineForm.startDate}
+                  onChange={(e) => setHeadlineForm({ ...headlineForm, startDate: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endDate">End Date (Optional)</Label>
+                <Input
+                  id="endDate"
+                  type="datetime-local"
+                  value={headlineForm.endDate}
+                  onChange={(e) => setHeadlineForm({ ...headlineForm, endDate: e.target.value })}
+                />
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => {
-               setIsHeadlineModalOpen(false)
-               setEditingItem(null)
-               setHeadlineForm({
-                 message: '',
-                 type: 'INFO',
-                 isActive: true,
-                 startDate: '',
-                 endDate: ''
-               })
-             }}>
+              setIsHeadlineModalOpen(false)
+              setEditingItem(null)
+              setHeadlineForm({
+                message: '',
+                type: 'INFO',
+                isActive: true,
+                startDate: '',
+                endDate: ''
+              })
+            }}>
               Cancel
             </Button>
-            <Button 
+            <Button
               className="bg-blue-600 hover:bg-blue-700"
               onClick={handleSaveHeadlineMessage}
             >
@@ -781,7 +1264,25 @@ export default function HomeSettingsPage() {
       </Dialog>
 
       {/* Carousel Banner Modal */}
-      <Dialog open={isCarouselModalOpen} onOpenChange={setIsCarouselModalOpen}>
+      <Dialog open={isCarouselModalOpen} onOpenChange={(open) => {
+        setIsCarouselModalOpen(open)
+        if (!open) {
+          setEditingItem(null)
+          setCarouselForm({
+            title: '',
+            subtitle: '',
+            description: '',
+            buttonText: '',
+            buttonLink: '',
+            image: '',
+            logoImage: '',
+            bgColor: '#000000',
+            textColor: '#ffffff',
+            isActive: true,
+            position: 'CENTER'
+          })
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingItem ? 'Edit' : 'Add'} Carousel Banner</DialogTitle>
@@ -793,39 +1294,86 @@ export default function HomeSettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
-                <Input id="title" placeholder="Enter banner title" />
+                <Input
+                  id="title"
+                  placeholder="Enter banner title"
+                  value={carouselForm.title}
+                  onChange={(e) => setCarouselForm({ ...carouselForm, title: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="subtitle">Subtitle</Label>
-                <Input id="subtitle" placeholder="Enter banner subtitle" />
+                <Input
+                  id="subtitle"
+                  placeholder="Enter banner subtitle"
+                  value={carouselForm.subtitle}
+                  onChange={(e) => setCarouselForm({ ...carouselForm, subtitle: e.target.value })}
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Enter banner description" />
+              <Textarea
+                id="description"
+                placeholder="Enter banner description"
+                value={carouselForm.description}
+                onChange={(e) => setCarouselForm({ ...carouselForm, description: e.target.value })}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="buttonText">Button Text</Label>
-                <Input id="buttonText" placeholder="Shop Now" />
+                <Input
+                  id="buttonText"
+                  placeholder="Shop Now"
+                  value={carouselForm.buttonText}
+                  onChange={(e) => setCarouselForm({ ...carouselForm, buttonText: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="buttonLink">Button Link</Label>
-                <Input id="buttonLink" placeholder="/products" />
+                <Input
+                  id="buttonLink"
+                  placeholder="/products"
+                  value={carouselForm.buttonLink}
+                  onChange={(e) => setCarouselForm({ ...carouselForm, buttonLink: e.target.value })}
+                />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input
+                id="image"
+                placeholder="https://example.com/image.jpg"
+                value={carouselForm.image}
+                onChange={(e) => setCarouselForm({ ...carouselForm, image: e.target.value })}
+              />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="bgColor">Background Color</Label>
-                <Input id="bgColor" type="color" defaultValue="#000000" />
+                <Input
+                  id="bgColor"
+                  type="color"
+                  value={carouselForm.bgColor}
+                  onChange={(e) => setCarouselForm({ ...carouselForm, bgColor: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="textColor">Text Color</Label>
-                <Input id="textColor" type="color" defaultValue="#ffffff" />
+                <Input
+                  id="textColor"
+                  type="color"
+                  value={carouselForm.textColor}
+                  onChange={(e) => setCarouselForm({ ...carouselForm, textColor: e.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="position">Position</Label>
-                <Select>
+                <Select
+                  value={carouselForm.position}
+                  onValueChange={(value) => setCarouselForm({ ...carouselForm, position: value as 'LEFT' | 'CENTER' | 'RIGHT' })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select position" />
                   </SelectTrigger>
@@ -837,17 +1385,407 @@ export default function HomeSettingsPage() {
                 </Select>
               </div>
             </div>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="isActive"
+                  checked={carouselForm.isActive}
+                  onCheckedChange={(checked) => setCarouselForm({ ...carouselForm, isActive: checked })}
+                />
+                <Label htmlFor="isActive">Active</Label>
+              </div>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCarouselModalOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setIsCarouselModalOpen(false)
+              setEditingItem(null)
+              setCarouselForm({
+                title: '',
+                subtitle: '',
+                description: '',
+                buttonText: '',
+                buttonLink: '',
+                image: '',
+                logoImage: '',
+                bgColor: '#000000',
+                textColor: '#ffffff',
+                isActive: true,
+                position: 'CENTER'
+              })
+            }}>
               Cancel
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={handleSaveCarouselBanner}
+              disabled={saving}
+            >
+              {saving ? <Spinner size="sm" className="mr-2" /> : null}
               {editingItem ? 'Update' : 'Create'} Banner
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <FlashSaleProductModal
+        isOpen={isFlashSaleModalOpen}
+        onClose={() => setIsFlashSaleModalOpen(false)}
+        onSave={handleAddFlashSaleProduct}
+      />
+      <SaleBannerModal
+        isOpen={isSaleModalOpen}
+        onClose={() => {
+          setIsSaleModalOpen(false)
+          setEditingItem(null)
+        }}
+        onSave={handleSaveSaleBanner}
+        editingItem={editingItem as SaleBanner | null}
+      />
     </div>
+  )
+}
+
+const SaleBannerModal = ({ isOpen, onClose, onSave, editingItem }: {
+  isOpen: boolean
+  onClose: () => void
+  onSave: (banner: SaleBanner) => void
+  editingItem: SaleBanner | null
+}) => {
+  const [form, setForm] = useState<Omit<SaleBanner, 'id'> & { id?: string }>({
+    title: '',
+    description: '',
+    discount: '',
+    image: '',
+    bgColor: '#f8fafc',
+    textColor: '#0f172a',
+    buttonText: '',
+    buttonLink: '',
+    isActive: true,
+    startDate: '',
+    endDate: ''
+  })
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (editingItem) {
+      setForm({
+        id: editingItem.id,
+        title: editingItem.title,
+        description: editingItem.description || '',
+        discount: editingItem.discount || '',
+        image: editingItem.image || '',
+        bgColor: editingItem.bgColor,
+        textColor: editingItem.textColor,
+        buttonText: editingItem.buttonText || '',
+        buttonLink: editingItem.buttonLink || '',
+        isActive: editingItem.isActive,
+        startDate: editingItem.startDate || '',
+        endDate: editingItem.endDate || ''
+      })
+    } else {
+      setForm({
+        title: '',
+        description: '',
+        discount: '',
+        image: '',
+        bgColor: '#f8fafc',
+        textColor: '#0f172a',
+        buttonText: '',
+        buttonLink: '',
+        isActive: true,
+        startDate: '',
+        endDate: ''
+      })
+    }
+  }, [editingItem, isOpen])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    
+    const banner: SaleBanner = {
+      id: form.id || '',
+      title: form.title,
+      description: form.description,
+      discount: form.discount,
+      image: form.image,
+      bgColor: form.bgColor,
+      textColor: form.textColor,
+      buttonText: form.buttonText,
+      buttonLink: form.buttonLink,
+      isActive: form.isActive,
+      startDate: form.startDate,
+      endDate: form.endDate
+    }
+    
+    onSave(banner)
+    setSaving(false)
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>{editingItem ? 'Edit' : 'Add'} Sale Banner</DialogTitle>
+          <DialogDescription>
+            Create a promotional sale banner to display on your store.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="discount">Discount Text</Label>
+              <Input
+                id="discount"
+                value={form.discount || ''}
+                onChange={(e) => setForm({ ...form, discount: e.target.value })}
+                placeholder="e.g. 50% OFF"
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={form.description || ''}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Enter banner description"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input
+                id="image"
+                value={form.image || ''}
+                onChange={(e) => setForm({ ...form, image: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="buttonText">Button Text</Label>
+              <Input
+                id="buttonText"
+                value={form.buttonText || ''}
+                onChange={(e) => setForm({ ...form, buttonText: e.target.value })}
+                placeholder="e.g. Shop Now"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="buttonLink">Button Link</Label>
+              <Input
+                id="buttonLink"
+                value={form.buttonLink || ''}
+                onChange={(e) => setForm({ ...form, buttonLink: e.target.value })}
+                placeholder="/products/category"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="bgColor">Background Color</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="bgColor"
+                  type="color"
+                  value={form.bgColor}
+                  onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
+                  className="w-12 h-8 p-1"
+                />
+                <Input
+                  value={form.bgColor}
+                  onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="textColor">Text Color</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="textColor"
+                  type="color"
+                  value={form.textColor}
+                  onChange={(e) => setForm({ ...form, textColor: e.target.value })}
+                  className="w-12 h-8 p-1"
+                />
+                <Input
+                  value={form.textColor}
+                  onChange={(e) => setForm({ ...form, textColor: e.target.value })}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="startDate">Start Date (Optional)</Label>
+              <Input
+                id="startDate"
+                type="datetime-local"
+                value={form.startDate || ''}
+                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="endDate">End Date (Optional)</Label>
+              <Input
+                id="endDate"
+                type="datetime-local"
+                value={form.endDate || ''}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="isActive"
+                  checked={form.isActive}
+                  onCheckedChange={(checked) => setForm({ ...form, isActive: checked })}
+                />
+                <Label htmlFor="isActive">Active</Label>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? <Spinner size="sm" className="mr-2" /> : null}
+              {editingItem ? 'Update' : 'Create'} Banner
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const FlashSaleProductModal = ({ isOpen, onClose, onSave }: {
+  isOpen: boolean
+  onClose: () => void
+  onSave: (productId: string) => void
+}) => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return
+    
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/search?search=${encodeURIComponent(searchTerm)}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        setSearchResults(data.products || [])
+      } else {
+        toast.error('Failed to search products')
+      }
+    } catch (error) {
+      console.error('Error searching products:', error)
+      toast.error('An error occurred while searching products')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (selectedProduct) {
+      onSave(selectedProduct)
+      onClose()
+    } else {
+      toast.error('Please select a product')
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Add Product to Flash Sale</DialogTitle>
+          <DialogDescription>
+            Search and select a product to add to the flash sale.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center space-x-2 mb-4">
+          <Input
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1"
+          />
+          <Button type="button" onClick={handleSearch} disabled={loading}>
+            {loading ? 'Searching...' : 'Search'}
+          </Button>
+        </div>
+        <div className="max-h-[300px] overflow-y-auto border rounded-md">
+          {searchResults.length > 0 ? (
+            <div className="divide-y">
+              {searchResults.map((product) => (
+                <div 
+                  key={product.id} 
+                  className={`p-3 flex items-center space-x-3 cursor-pointer hover:bg-gray-700 ${selectedProduct === product.id ? 'bg-gray-800' : ''}`}
+                  onClick={() => setSelectedProduct(product.id)}
+                >
+                  <div className="w-12 h-12 rounded overflow-hidden  flex-shrink-0">
+                    {product.images && product.images[0] ? (
+                      <img 
+                        src={product.images[0].url} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <ImageIcon size={20} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium">{product.name}</h4>
+                    <div className="text-sm text-gray-500 flex space-x-2">
+                      <span>${product.regularPrice}</span>
+                      {product.salePrice && (
+                        <span className="text-red-500">${product.salePrice}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 text-center text-gray-500">
+              {loading ? 'Searching...' : searchTerm ? 'No products found' : 'Search for products to add'}
+            </div>
+          )}
+        </div>
+        <DialogFooter className="mt-4">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={!selectedProduct}>
+            Add to Flash Sale
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `promotion_products` ADD COLUMN `type` ENUM('REGULAR', 'FLASH_SALE') NOT NULL DEFAULT 'REGULAR';

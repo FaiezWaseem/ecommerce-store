@@ -11,6 +11,7 @@ import Footer from "@/components/footer"
 import CrousalHero from "@/components/HomeScreen/crousal-hero"
 import Categories from "@/components/HomeScreen/categories"
 import FlashSale from "@/components/HomeScreen/flash-sale"
+import SaleBanner from '@/components/HomeScreen/sale-banner'
 import ExploreProducts from "@/components/explore-products/explore-products"
 import { products } from "./constants"
 
@@ -93,7 +94,6 @@ async function getHomePageData(): Promise<HomePageData> {
       categoriesResponse.json()
     ]);
 
-    console.log('Categories Data:', categoriesData);
 
     return {
       ...homeData,
@@ -133,7 +133,8 @@ async function getHomePageData(): Promise<HomePageData> {
 
 export default async function Home() {
   const homeData = await getHomePageData()
-  const { settings } = homeData
+  const { settings  , carouselBanners  , categories , bestSellingProducts } = homeData
+
 
 
   return (
@@ -186,7 +187,7 @@ export default async function Home() {
             {/* Main Content */}
             <div className="md:space-y-6">
               {/* Hero Carousel */}
-              {settings.heroSectionEnabled && <CrousalHero />}
+              {settings.heroSectionEnabled && <CrousalHero carouselBanners={carouselBanners} />}
             </div>
           </div>
 
@@ -201,8 +202,13 @@ export default async function Home() {
               alt="Orange and White Modern Furniture Promo Mobile Banner Ads" />
             </div>
         
+            {/* Sale Banners */}
+            {homeData.saleBanners && homeData.saleBanners.length > 0 && (
+              <SaleBanner saleBanners={homeData.saleBanners} />
+            )}
+
             {/* Browse By Category */}
-            {settings.categoriesEnabled && <Categories />}
+            {settings.categoriesEnabled && <Categories categories={categories} />}
 
             {/* Best Selling Products */}
             {settings.bestSellingEnabled && (

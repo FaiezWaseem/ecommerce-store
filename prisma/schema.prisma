@@ -334,6 +334,7 @@ model HomePageSettings {
   heroSectionEnabled    Boolean  @default(true)
   categoriesEnabled     Boolean  @default(true)
   flashSaleEnabled      Boolean  @default(true)
+  flashSaleEndTime      DateTime? 
   bestSellingEnabled    Boolean  @default(true)
   featuredBannerEnabled Boolean  @default(true)
   exploreProductsEnabled Boolean @default(true)
@@ -431,6 +432,7 @@ model PromotionProduct {
   badge     String?
   isActive  Boolean  @default(true)
   sortOrder Int      @default(0)
+  type      PromotionType @default(REGULAR)
   startDate DateTime?
   endDate   DateTime?
   createdAt DateTime @default(now())
@@ -440,6 +442,11 @@ model PromotionProduct {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("promotion_products")
+}
+
+enum PromotionType {
+  REGULAR
+  FLASH_SALE
 }
 
 model PromotionCategory {

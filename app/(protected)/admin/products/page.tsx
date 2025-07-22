@@ -83,7 +83,7 @@ export default function AdminProducts() {
                 ...(search && { search }),
             });
             
-            const response = await fetch(`/api/search?${params}`);
+            const response = await fetch(`/api/products?${params}`);
             const data = await response.json();
             
             if (data.success) {
