@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
   try {
+    await db.$connect();
     const category = await db.category.findUnique({
       where: { 
         slug: params.slug,
@@ -48,6 +52,7 @@ export async function GET(
       );
     }
     
+    await db.$disconnect();
     return NextResponse.json({
       success: true,
       data: category

@@ -3,8 +3,12 @@ import { db as prisma } from '@/lib/db'
 
 import { requireRole } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET(request: NextRequest) {
   try {
+    await prisma.$connect();
      requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
     // Get recent orders with user information
     const recentOrders = await prisma.order.findMany({
@@ -34,6 +38,7 @@ export async function GET(request: NextRequest) {
       createdAt: order.createdAt.toISOString()
     }))
 
+    await prisma.$disconnect();
     return NextResponse.json(formattedOrders)
 
   } catch (error) {

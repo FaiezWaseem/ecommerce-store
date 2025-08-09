@@ -3,6 +3,9 @@ import { db } from '@/lib/db';
 import { requireRole } from '@/lib/middleware';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 const createCategorySchema = z.object({
   name: z.string().min(1, 'Category name is required'),
   slug: z.string().min(1, 'Category slug is required'),
@@ -16,6 +19,7 @@ const updateCategorySchema = createCategorySchema.partial();
 
 export async function GET(request: NextRequest) {
   try {
+    await db.$connect();
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
@@ -68,6 +72,7 @@ export async function GET(request: NextRequest) {
       db.category.count({ where }),
     ]);
     
+    await db.$disconnect();
     return NextResponse.json({
       categories,
       pagination: {
@@ -88,6 +93,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await db.$connect();
     // Check if user has admin permissions
     requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
     
@@ -149,6 +155,7 @@ export async function POST(request: NextRequest) {
       },
     });
     
+    await db.$disconnect();
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

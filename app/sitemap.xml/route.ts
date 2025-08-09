@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
 import { db as prisma } from '@/lib/db'
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET() {
   try {
+    // Ensure database connection
+    await prisma.$connect();
     // Get all active categories and products for sitemap
     const [categories, products] = await Promise.all([
       prisma.category.findMany({
@@ -15,7 +20,7 @@ export async function GET() {
       })
     ])
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://yourstore.com'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL 
     const currentDate = new Date().toISOString()
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -86,5 +91,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error generating sitemap:', error)
     return new NextResponse('Error generating sitemap', { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 }

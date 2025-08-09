@@ -71,7 +71,8 @@ interface Product {
 
 async function getProduct(slug: string): Promise<Product | null> {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products/slug/${slug}`, {
+        console.log('NEXT_PUBLIC_APP_URL', process.env.NEXT_PUBLIC_APP_URL)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/products/slug/${slug}`, {
             cache: 'no-store'
         })
 
@@ -89,7 +90,7 @@ async function getProduct(slug: string): Promise<Product | null> {
 
 async function getRelatedProducts(categoryId: string, currentProductId: string): Promise<Product[]> {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products?category=${categoryId}&limit=4&status=ACTIVE`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/products?category=${categoryId}&limit=4&status=ACTIVE`, {
             cache: 'no-store'
         })
 
@@ -256,7 +257,7 @@ export default function ProductPage({ params }: ProductPageProps) {
         : 0
 
     // Generate structured data for SEO
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
     const productUrl = `${baseUrl}/product/${product.slug}`
 
     const structuredData = {

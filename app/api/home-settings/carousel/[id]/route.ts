@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-
 import { db as prisma } from '@/lib/db'
 import { requireRole } from '@/lib/middleware';
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 // PUT - Update carousel banner
 export async function PUT(
@@ -9,6 +11,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    await prisma.$connect();
     requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
 
     const data = await request.json()
@@ -39,6 +42,8 @@ export async function PUT(
       { error: 'Internal server error' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }
 

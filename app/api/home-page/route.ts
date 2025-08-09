@@ -1,9 +1,15 @@
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { NextRequest, NextResponse } from 'next/server'
 import { db as prisma } from '@/lib/db'
 
 // GET - Fetch home page data for frontend
 export async function GET() {
   try {
+    // Ensure database connection
+    await prisma.$connect();
+
     // Fetch home page settings
     let settings = await prisma.homePageSettings.findFirst()
 
@@ -158,5 +164,7 @@ export async function GET() {
       { error: 'Internal server error' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }

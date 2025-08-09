@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { NextRequest, NextResponse } from 'next/server'
 import { db as prisma } from '@/lib/db'
 import { requireRole } from '@/lib/middleware'
@@ -8,6 +11,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    await prisma.$connect();
     const { id } = params
 
     const saleBanner = await prisma.saleBanner.findUnique({
@@ -28,6 +32,8 @@ export async function GET(
       { error: 'Internal server error' },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }
 

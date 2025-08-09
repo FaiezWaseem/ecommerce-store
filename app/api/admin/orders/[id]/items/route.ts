@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-
 import { db as prisma } from '@/lib/db';
 import { requireRole } from '@/lib/middleware';
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    await prisma.$connect();
     requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
 
     const orderId = params.id;
@@ -107,6 +109,7 @@ export async function POST(
       },
     });
 
+    await prisma.$disconnect();
     return NextResponse.json({ 
       message: 'Product added to order successfully',
       order: updatedOrder 

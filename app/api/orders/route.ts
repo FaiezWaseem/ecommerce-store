@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { db as prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { getUserById } from '@/lib/auth';
 import { getAuthUser } from '@/lib/middleware';
 
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 function generateOrderNumber(): string {
     const timestamp = Date.now().toString();

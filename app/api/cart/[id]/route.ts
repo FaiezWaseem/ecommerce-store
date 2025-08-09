@@ -4,6 +4,9 @@ import { getUserById, verifyToken } from '@/lib/auth';
 import { z } from 'zod';
 import { getAuthUser } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 const updateCartItemSchema = z.object({
   quantity: z.number().int().min(1, 'Quantity must be at least 1'),
 });

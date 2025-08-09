@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db as prisma } from '@/lib/db';
-import { getUserById, verifyToken } from '@/lib/auth';
+import { getUserById } from '@/lib/auth';
 import { z } from 'zod';
 import { getAuthUser } from '@/lib/middleware';
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 
 const addToCartSchema = z.object({
   productId: z.string().min(1, 'Product ID is required'),
@@ -166,6 +170,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    await prisma.$disconnect();
     return NextResponse.json(
       { 
         message: 'Item added to cart successfully',

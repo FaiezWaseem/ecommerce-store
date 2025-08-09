@@ -3,8 +3,12 @@ import { db as prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { requireRole } from '@/lib/middleware';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET(request: NextRequest) {
     try {
+        await prisma.$connect();
         requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
         // Get query parameters for pagination and filtering
         const { searchParams } = new URL(request.url);
@@ -62,6 +66,7 @@ export async function GET(request: NextRequest) {
             prisma.order.count({ where })
         ]);
 
+        await prisma.$disconnect();
         return NextResponse.json({
             orders,
             pagination: {
@@ -82,6 +87,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
     try {
+        await prisma.$connect();
         // Verify authentication and admin role
         requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
 
@@ -122,6 +128,7 @@ export async function PATCH(request: NextRequest) {
             }
         });
 
+        await prisma.$disconnect();
         return NextResponse.json({ order: updatedOrder });
     } catch (error) {
         console.error('Error updating order:', error);

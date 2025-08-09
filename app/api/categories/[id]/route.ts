@@ -3,6 +3,9 @@ import { db } from '@/lib/db';
 import { requireRole } from '@/lib/middleware';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 const updateCategorySchema = z.object({
   name: z.string().min(1, 'Category name is required').optional(),
   slug: z.string().min(1, 'Category slug is required').optional(),
@@ -17,6 +20,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    await db.$connect();
     const category = await db.category.findUnique({
       where: { id: params.id },
       include: {
@@ -47,6 +51,7 @@ export async function GET(
       );
     }
     
+    await db.$disconnect();
     return NextResponse.json(category);
   } catch (error) {
     console.error('Error fetching category:', error);
@@ -62,6 +67,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    await db.$connect();
     // Check if user has admin permissions
     requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
     
@@ -153,6 +159,7 @@ export async function PUT(
       },
     });
     
+    await db.$disconnect();
     return NextResponse.json(updatedCategory);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -175,6 +182,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    await db.$connect();
     // Check if user has admin permissions
     requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
     
