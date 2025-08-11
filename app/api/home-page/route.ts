@@ -1,3 +1,7 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 import { NextRequest, NextResponse } from 'next/server'
 import { db as prisma } from '@/lib/db'
 
@@ -6,6 +10,7 @@ export async function GET() {
   try {
     // Fetch home page settings
     let settings = await prisma.homePageSettings.findFirst()
+console.log('Fetched at', new Date(), settings);
 
     // Create default settings if none exist
     if (!settings) {
@@ -142,6 +147,7 @@ export async function GET() {
     })
 
     return NextResponse.json({
+      now: new Date().toISOString(),
       settings,
       carouselBanners,
       promotionalBanners,

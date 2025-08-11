@@ -1,73 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir, chmod } from 'fs/promises';
 import path from 'path';
+import fs from 'fs';
+
+// Allowed file types by extension
+const allowedExtensions = [
+    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg',
+    '.mp4', '.webm', '.mov', '.avi', '.mkv',
+    '.mp3', '.wav', '.ogg',
+    '.zip', '.pdf'
+];
+
+// Blocked file extensions (security)
+const blockedExtensions = [
+    '.js', '.mjs', '.cjs',
+    '.php', '.html', '.htm',
+    '.py', '.rb', '.sh',
+    '.exe', '.bat', '.cmd',
+    '.dll', '.jar', '.asp', '.aspx'
+];
 
 export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
         const file = formData.get('file') as File;
-        const folder = formData.get('folder') as string || 'uploads';
+        const folder = (formData.get('folder') as string) || 'general';
 
         if (!file) {
-            return NextResponse.json(
-                { error: 'No file provided' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
-        // Validate file type (images and videos)
-        if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-            return NextResponse.json(
-                { error: 'Only image and video files are allowed' },
-                { status: 400 }
-            );
+        const ext = path.extname(file.name).toLowerCase();
+
+        // Block dangerous file types
+        if (blockedExtensions.includes(ext)) {
+            return NextResponse.json({ error: 'This file type is not allowed' }, { status: 400 });
         }
 
-        // Validate file size (max 50MB for videos, 5MB for images)
-        const maxSize = file.type.startsWith('video/') ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for videos, 5MB for images
+        // Allow only specific file types
+        if (!allowedExtensions.includes(ext)) {
+            return NextResponse.json({ error: 'Unsupported file type' }, { status: 400 });
+        }
+
+        // File size limits (50MB for videos, 5MB for images/audio, 100MB for zip/pdf)
+        let maxSize = 5 * 1024 * 1024; // default 5MB
+        if (['.mp4', '.webm', '.mov', '.avi', '.mkv'].includes(ext)) maxSize = 50 * 1024 * 1024;
+        if (['.zip', '.pdf'].includes(ext)) maxSize = 100 * 1024 * 1024;
+
         if (file.size > maxSize) {
-            return NextResponse.json(
-                { error: 'File size must be less than 5MB' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: `File too large. Max allowed size is ${maxSize / (1024 * 1024)}MB` }, { status: 400 });
         }
 
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Generate unique filename
         const timestamp = Date.now();
-        const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const filename = `${timestamp}_${originalName}`;
+        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filename = `${timestamp}_${safeName}`;
 
-        // Determine the appropriate directory based on file type
-        const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
-        
-        // Create upload directory if it doesn't exist
-        const uploadDir = path.join(process.cwd(), 'public', mediaType, folder);
+        // Store in "uploads" folder outside public/
+        const uploadDir = path.join(process.cwd(), 'uploads', folder);
         await mkdir(uploadDir, { recursive: true });
 
-        // Write file to public folder
         const filePath = path.join(uploadDir, filename);
+        //@ts-ignore
+        await writeFile(filePath, buffer);
+        
+        try {
+            await chmod(filePath, 0o644);
+        } catch (err) {
+            console.warn('Could not set file permissions:', err);
+        }
 
-        await writeFile(filePath, buffer as any);
+        if (!fs.existsSync(filePath)) {
+            throw new Error('File was not written successfully');
+        }
 
-        // Return the public URL
-        const publicUrl = `/${mediaType}/${folder}/${filename}`;
+        // Instead of direct public URL, we serve via API route
+        const serveUrl = `/api/upload/${folder}/${filename}`;
 
         return NextResponse.json({
             success: true,
-            url: publicUrl,
-            filename: filename,
+            url: serveUrl,
+            filename,
             size: file.size,
             type: file.type
         });
 
     } catch (error) {
         console.error('Upload error:', error);
-        return NextResponse.json(
-            { error: 'Failed to upload file' },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
     }
 }
