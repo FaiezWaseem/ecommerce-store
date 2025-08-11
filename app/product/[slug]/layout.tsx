@@ -34,7 +34,7 @@ interface Product {
 
 async function getProduct(slug: string): Promise<Product | null> {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/products/slug/${slug}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/products/slug/${slug}`, {
             cache: 'no-store'
         })
         
@@ -86,12 +86,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     const title = `${product.name} - ${formatPrice(currentPrice)}${hasDiscount ? ` (${discountPercent}% Off)` : ''}`
     const description = product.shortDescription || product.description || `Buy ${product.name} at the best price. ${product.category?.name ? `Shop ${product.category.name} products` : 'Shop now'} with fast delivery and great customer service.`
     
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL
-
-    if(!baseUrl) {
-        throw new Error('NEXT_PUBLIC_APP_URL is not defined')
-    }
-
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     const productUrl = `${baseUrl}/product/${product.slug}`
     
     return {

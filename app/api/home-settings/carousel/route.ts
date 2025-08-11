@@ -3,13 +3,9 @@ import { getServerSession } from 'next-auth/next'
 import { db as prisma } from '@/lib/db'
 import { requireRole } from '@/lib/middleware'
 
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
-
 // GET - Fetch all carousel banners
 export async function GET() {
   try {
-    await prisma.$connect();
 
 
     const carouselBanners = await prisma.carouselBanner.findMany({
@@ -23,8 +19,6 @@ export async function GET() {
       { error: 'Internal server error' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }
 

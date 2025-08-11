@@ -77,10 +77,10 @@ async function getHomePageData(): Promise<HomePageData> {
   try {
     // Fetch homepage data and categories in parallel
     const [homeResponse, categoriesResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/home-page`, {
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/home-page`, {
         cache: 'no-store'
       }),
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories?isActive=true&limit=20`, {
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/categories?isActive=true&limit=20`, {
         cache: 'no-store'
       })
     ]);

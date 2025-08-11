@@ -95,7 +95,7 @@ interface CategoryPageProps {
 // Fetch category by slug
 async function getCategory(slug: string): Promise<Category | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories/slug/${slug}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/categories/slug/${slug}`, {
       cache: 'no-store'
     });
     
@@ -140,7 +140,7 @@ async function getProductsByCategory(
       params.set('stockStatus', 'IN_STOCK');
     }
     
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products?${params.toString()}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/products?${params.toString()}`, {
       cache: 'no-store'
     });
     

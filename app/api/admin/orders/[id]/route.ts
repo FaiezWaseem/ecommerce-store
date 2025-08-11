@@ -3,15 +3,11 @@ import { db as prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { requireRole } from '@/lib/middleware';
 
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.$connect();
     // Verify authentication and admin role
     requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
     const orderId = params.id;
@@ -45,7 +41,6 @@ export async function GET(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    await prisma.$disconnect();
     return NextResponse.json({ order });
   } catch (error) {
     console.error('Error fetching admin order:', error);
@@ -61,7 +56,6 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    await prisma.$connect();
     // Verify authentication and admin role
      requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);
 
@@ -139,7 +133,6 @@ export async function PATCH(
       }
     });
 
-    await prisma.$disconnect();
     return NextResponse.json({ order: updatedOrder });
   } catch (error) {
     console.error('Error updating admin order:', error);

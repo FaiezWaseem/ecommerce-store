@@ -4,9 +4,6 @@ import { db as prisma } from '@/lib/db'
 import { requireRole } from '@/lib/middleware';
 import { OrderStatus, ProductStatus } from '@prisma/client';
 
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
-
 export async function GET(request: NextRequest) {
   try {
      requireRole(request, ['SUPER_ADMIN', 'MANAGEMENT']);

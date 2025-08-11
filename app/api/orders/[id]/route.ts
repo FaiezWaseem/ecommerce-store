@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db as prisma } from '@/lib/db';
+import { PrismaClient } from '@prisma/client'
 import {  getUserById } from '@/lib/auth';
 import { getAuthUser } from '@/lib/middleware';
 
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
+const prisma = new PrismaClient();
 
 export async function GET(
     request: NextRequest,

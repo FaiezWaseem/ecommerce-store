@@ -480,9 +480,9 @@ async function main() {
   console.log('Email: customer@example.com');
   console.log('Password: customer123');
   console.log('\n🌐 You can now access:');
-  console.log(`- Home page with dynamic content: ${process.env.NEXT_PUBLIC_APP_URL}`);
-  console.log(`- Admin panel: ${process.env.NEXT_PUBLIC_APP_URL}/admin`);
-  console.log(`- Home settings: ${process.env.NEXT_PUBLIC_APP_URL}/admin/home-settings`);
+  console.log('- Home page with dynamic content: http://localhost:3000');
+  console.log('- Admin panel: http://localhost:3000/admin');
+  console.log('- Home settings: http://localhost:3000/admin/home-settings');
   console.log('- Prisma Studio: http://localhost:5555');
 }
 

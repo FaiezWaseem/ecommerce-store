@@ -33,7 +33,7 @@ interface Category {
 // Fetch all active categories
 async function getCategories(): Promise<Category[]> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories?isActive=true&limit=100`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/categories?isActive=true&limit=100`, {
       cache: 'no-store'
     });
     
