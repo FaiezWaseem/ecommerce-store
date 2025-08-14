@@ -125,7 +125,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
             siteName: 'Samreens',
             images: mainImage ? [
                 {
-                    url: mainImage.url,
+                    url: process.env.NEXT_PUBLIC_APP_URL + mainImage.url,
                     width: 800,
                     height: 800,
                     alt: mainImage.alt || product.name,
@@ -138,7 +138,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
             title,
             description,
             creator: '@Samreens',
-            images: mainImage ? [mainImage.url] : [],
+            images: mainImage ? [process.env.NEXT_PUBLIC_APP_URL + mainImage.url] : [],
+
         },
         alternates: {
             canonical: productUrl,

@@ -151,7 +151,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         "image": mainImage ? [mainImage.url] : [],
         "brand": {
             "@type": "Brand",
-            "name": "Your Store Name"
+            "name": "Samreens"
         },
         "category": product.category?.name || "General",
         "offers": {
@@ -164,7 +164,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             "condition": "https://schema.org/NewCondition",
             "seller": {
                 "@type": "Organization",
-                "name": "Your Store Name"
+                "name": "Samreens"
             },
             "url": productUrl,
             "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days from now
@@ -263,7 +263,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     <meta itemProp="sku" content={product.sku || product.id} />
                     <meta itemProp="category" content={product.category?.name || 'General'} />
                     <meta itemProp="url" content={productUrl} />
-                    {mainImage && <meta itemProp="image" content={mainImage.url} />}
+                    {mainImage && <meta itemProp="image" content={process.env.NEXT_PUBLIC_APP_URL + mainImage.url} />}
+
                     <ProductClientComponent
                         product={product}
                         relatedProducts={relatedProducts}
