@@ -17,15 +17,15 @@ import { products } from "./constants"
 
 // SEO Metadata
 export const metadata: Metadata = {
-  title: 'Home - Your Premium E-commerce Store',
+  title: 'Home - Samreens',
   description: 'Discover amazing products with great deals, flash sales, and new arrivals. Shop the best selection of electronics, fashion, and more with fast delivery.',
   keywords: 'ecommerce, online shopping, electronics, fashion, deals, flash sale, new arrivals, best selling products',
   openGraph: {
-    title: 'Home - Your Premium E-commerce Store',
+    title: 'Home - Samreens',
     description: 'Discover amazing products with great deals, flash sales, and new arrivals.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'Your E-commerce Store'
+    siteName: 'Samreens'
   },
   twitter: {
     card: 'summary_large_image',

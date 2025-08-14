@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://yourstore.com'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://yourstore.com'
   
   const robotsTxt = `User-agent: *
 Allow: /
@@ -18,8 +18,10 @@ Disallow: /orders
 # Allow search engines to crawl important pages
 Allow: /search
 Allow: /category/
+Allow: /categories/
 Allow: /product/
 Allow: /categories
+Allow: /privacy-policy
 
 # Sitemap location
 Sitemap: ${baseUrl}/sitemap.xml

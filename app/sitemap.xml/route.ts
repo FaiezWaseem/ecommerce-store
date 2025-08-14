@@ -15,7 +15,7 @@ export async function GET() {
       })
     ])
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://yourstore.com'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://yourstore.com'
     const currentDate = new Date().toISOString()
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
