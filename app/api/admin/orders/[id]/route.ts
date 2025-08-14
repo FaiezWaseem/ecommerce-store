@@ -73,7 +73,7 @@ export async function PATCH(
 
     const updateData: any = {
       status: status || order.status,
-      trackingNumber: trackingNumber || order.orderNumber,
+      // trackingNumber: trackingNumber || order.orderNumber,
     };
 
     // Update customer details if provided

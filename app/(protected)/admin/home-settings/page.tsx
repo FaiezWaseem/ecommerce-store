@@ -672,9 +672,9 @@ export default function HomeSettingsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="md:container mx-auto lg:p-6 space-y-6">
       <AdminNav active="Home Page Settings" />
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between p-5 flex-col gap-2 lg:flex-row">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Home Page Settings</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">

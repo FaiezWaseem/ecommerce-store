@@ -284,7 +284,7 @@ export default function AdminUsers() {
                 </div>
                 <hr className="mt-3" />
             </div>
-            <div className="flex-1 space-y-4 p-8 pt-6">
+            <div className="flex-1 space-y-4 p-2 lg:p-8 pt-6">
                 {loading ? (
                     <div className="flex justify-center items-center h-64">
                         <div className="text-lg">Loading users...</div>

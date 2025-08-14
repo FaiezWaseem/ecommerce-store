@@ -196,7 +196,7 @@ export default function AdminCategory() {
     };
 
     return <div className="flex justify-center min-h-screen w-full flex-col bg-muted/40">
-        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14 container">
+        <div className="flex flex-col p-0 sm:gap-4 sm:py-4 sm:pl-14 container">
             <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
                 <Breadcrumb className="hidden md:flex">
                     <BreadcrumbList>
@@ -308,12 +308,13 @@ export default function AdminCategory() {
                                 </div>
                             ) : (
                                 <div className="space-y-2">
+
                                     <Input
                                         id="category-image-file"
                                         type="file"
                                         accept="image/*"
                                         onChange={handleFileChange}
-                                        className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
+                                        // className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
                                     />
                                     {previewUrl && (
                                         <div className="mt-2">

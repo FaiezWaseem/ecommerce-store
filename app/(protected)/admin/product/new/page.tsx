@@ -823,20 +823,6 @@ export default function AddProduct() {
                                         </div>
                                     </CardContent>
                                 </Card>
-                                <Card x-chunk="dashboard-07-chunk-5">
-                                    <CardHeader>
-                                        <CardTitle>Archive Product</CardTitle>
-                                        <CardDescription>
-                                            Lipsum dolor sit amet, consectetur adipiscing elit.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div></div>
-                                        <Button size="sm" variant="secondary">
-                                            Archive Product
-                                        </Button>
-                                    </CardContent>
-                                </Card>
                             </div>
                         </div>
                         <div className="flex items-center justify-center gap-2 md:hidden">

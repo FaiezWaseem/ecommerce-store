@@ -178,12 +178,12 @@ export default function AdminCategory() {
         <AdminNav active="Category" />
         <main className="p-4">
 
-            <div className="p-4">
+            <div className="lg:p-4">
                 <h1 className="text-3xl font-bold text-black dark:text-white">Category</h1>
                 <p className="text-sm text-gray-500 mt-3">Welcome to the admin Category</p>
                 <hr className="mt-3" />
             </div>
-            <div className="flex-1 space-y-4 p-8 pt-6">
+            <div className="flex-1 space-y-4 lg:p-8 pt-6">
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <div className="text-lg">Loading categories...</div>

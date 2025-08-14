@@ -226,7 +226,7 @@ function OrderConfirmation() {
                         <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">Rs {item.total}</p>
+                        <p className="font-semibold">Rs {Number(item.total || 0)?.toFixed(2)}</p>
                         <p className="text-sm text-gray-600">Rs {item.price} each</p>
                       </div>
                     </div>

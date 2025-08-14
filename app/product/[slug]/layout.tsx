@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     if (!product) {
         return {
             title: 'Product Not Found ~ Samreens',
-            description: 'The requested product could not be found. ~ Samreens'
+            description: `The requested product (${params.slug}) could not be found. ~ Samreens`
         }
     }
     

@@ -3,6 +3,7 @@ import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { Apple, Facebook, Instagram, Linkedin, QrCode, Twitter, Home, ShoppingCart, User, Heart as WishList, Search } from 'lucide-react'
 import { Play } from 'lucide-react'
+import { BsTiktok } from "react-icons/bs"
 
 function MobileTabBar() {
   return (
@@ -56,9 +57,7 @@ export default function Footer(){
             <div className="space-y-4 w-full max-w-xs">
               <h2 className="text-xl font-bold">Support</h2>
               <ul className="space-y-2 text-sm">
-                <li>2079 County Road D E.</li>
-                <li>eshop@gmail.com</li>
-                <li>+88015-88888-9999</li>
+                <li>+</li>
               </ul>
             </div>
             <div className="space-y-4 w-full max-w-xs">
@@ -75,14 +74,12 @@ export default function Footer(){
               <h2 className="text-xl font-bold">Quick Link</h2>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/privacy-policy">Privacy Policy</Link></li>
-                <li><Link href="#">Terms Of Use</Link></li>
-                <li><Link href="#">FAQ</Link></li>
-                <li><Link href="#">Contact</Link></li>
               </ul>
             </div>
             <div className="space-y-4 w-full max-w-xs">
-              <h2 className="text-xl font-bold">Download App</h2>
-              <p className="text-sm">Save $3 with App New User Only</p>
+              <h2 className="text-xl font-bold">Download App (Comming Soon)</h2>
+              <p className="text-sm">Save 10% with App New User Only</p>
+
               <div className="grid grid-cols-2 gap-2 justify-center">
                 <div className="bg-gray-900 p-2 rounded flex justify-center">
                   <QrCode className="h-20 w-20" />
@@ -100,15 +97,14 @@ export default function Footer(){
               </div>
               <div className="flex space-x-4 justify-center">
                 <Link href="#"><Facebook className="h-5 w-5" /></Link>
-                <Link href="#"><Twitter className="h-5 w-5" /></Link>
                 <Link href="#"><Instagram className="h-5 w-5" /></Link>
-                <Link href="#"><Linkedin className="h-5 w-5" /></Link>
+                <Link href="#"><BsTiktok className="h-5 w-5" /></Link>
               </div>
             </div>
           </div>
           <Separator className="my-8" />
           <div className="text-center text-sm text-gray-400">
-            © Copyright E-shop {new Date().getFullYear()}. All right reserved
+            © Copyright Samreens {new Date().getFullYear()}. All right reserved
           </div>
         </div>
       </footer>

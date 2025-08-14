@@ -129,7 +129,7 @@ export default function RegisterPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter className="p-0 flex flex-col space-y-4">
+            <CardFooter className="p-0 pt-4 flex flex-col space-y-4">
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Creating account...' : 'Create account'}
               </Button>
@@ -140,11 +140,11 @@ export default function RegisterPage() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
+              {/* <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-              </div>
+              </div> */}
             </div>
-            <div className="flex space-x-2">
+            {/* <div className="flex space-x-2">
               <Button variant="outline" className="w-full">
                 <Github className="mr-2 h-4 w-4" />
                 Github
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
               </Button>
-            </div>
+            </div> */}
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link href="/login" className="underline underline-offset-4 hover:text-primary">

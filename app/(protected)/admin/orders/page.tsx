@@ -186,7 +186,7 @@ export default function AdminOrders() {
             <p className="text-sm text-gray-500 mt-3">Admin View Orders ({orders.length} total)</p>
             <hr className="mt-3" />
         </div>
-        <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex-1 space-y-4 p-2 lg:p-8 pt-6">
             <DataTable
                 data={orders}
                 INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}

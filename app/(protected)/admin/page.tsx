@@ -179,9 +179,9 @@ export default function AdminHome() {
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 min-h-screen">
       <AdminNav active="Dashboard" />
-      <main className="p-4 sm:p-6 lg:p-8">
+      <main className="lg:p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
-        <div className="mb-8">
+        <div className="mb-8 p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
@@ -204,7 +204,7 @@ export default function AdminHome() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 p-5">
           <StatsCard
             title="Total Revenue"
             value={formatCurrency(stats?.totalRevenue || 0)}
@@ -236,7 +236,7 @@ export default function AdminHome() {
         </div>
 
         {/* Charts and Recent Orders */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8 p-5">
           {/* Revenue Chart */}
           <Card className="xl:col-span-2 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader className="pb-4">
@@ -306,8 +306,8 @@ export default function AdminHome() {
         </div>
 
         {/* Quick Actions */}
-        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-          <CardHeader>
+        <Card className="border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-5">
+          <CardHeader className='flex-col'>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">Manage your store efficiently</p>
           </CardHeader>
