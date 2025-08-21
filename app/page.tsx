@@ -49,6 +49,92 @@ export const metadata: Metadata = {
   },
 }
 
+function NewArrivalSection({ section }: { section: any }) {
+  const getLayoutForType = (type: string) => {
+    switch (type) {
+      case 'PLAYSTATION':
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="relative h-[400px] rounded-lg overflow-hidden" style={{ backgroundColor: section.bgColor || '#000000' }}>
+              <div className="absolute z-10 inset-0 p-8 flex flex-col justify-center" style={{ color: section.textColor || '#ffffff' }}>
+                <h3 className="text-3xl font-bold mb-4">{section.title}</h3>
+                {section.subtitle && <p className="mb-4">{section.subtitle}</p>}
+                {section.buttonText && section.buttonLink && (
+                  <Link href={section.buttonLink} className="flex items-center gap-4 text-color-text-1 bg-transparent" style={{ color: section.textColor || '#ffffff' }}>
+                    <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">{section.buttonText}</p>
+                    <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                    </svg>
+                  </Link>
+                )}
+              </div>
+              {section.image && (
+                <Image
+                  src={section.image}
+                  alt={section.title}
+                  fill
+                  className="opacity-75 object-cover"
+                />
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="relative col-span-2 h-[185px] rounded-lg overflow-hidden" style={{ backgroundColor: section.bgColor || '#000000' }}>
+                <div className="col-span-2 flex items-end p-10 rounded-sm bg-no-repeat bg-contain bg-right" style={{ backgroundImage: section.image ? `url(${section.image})` : 'none' }}>
+                  <div className="space-y-4">
+                    <div className="text-color-text-1 space-y-1">
+                      <p className="text-[26px] capitalize max-2xl:text-2xl" style={{ color: section.textColor || '#ffffff' }}>{section.title}</p>
+                      {section.description && <p className="text-base max-2xl:text-sm" style={{ color: section.textColor || '#ffffff' }}>{section.description}</p>}
+                    </div>
+                    {section.buttonText && section.buttonLink && (
+                      <Link href={section.buttonLink} className="flex items-center gap-4 text-color-text-1 bg-transparent" style={{ color: section.textColor || '#ffffff' }}>
+                        <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">{section.buttonText}</p>
+                        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                        </svg>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      default:
+        return (
+          <div className="relative h-[300px] rounded-lg overflow-hidden" style={{ backgroundColor: section.bgColor || '#000000' }}>
+            <div className="absolute z-10 inset-0 p-8 flex flex-col justify-center" style={{ color: section.textColor || '#ffffff' }}>
+              <h3 className="text-3xl font-bold mb-4">{section.title}</h3>
+              {section.subtitle && <p className="text-lg mb-2">{section.subtitle}</p>}
+              {section.description && <p className="mb-4">{section.description}</p>}
+              {section.buttonText && section.buttonLink && (
+                <Link href={section.buttonLink} className="flex items-center gap-4 text-color-text-1 bg-transparent" style={{ color: section.textColor || '#ffffff' }}>
+                  <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">{section.buttonText}</p>
+                  <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                  </svg>
+                </Link>
+              )}
+            </div>
+            {section.image && (
+              <Image
+                src={section.image}
+                alt={section.title}
+                fill
+                className="opacity-75 object-cover"
+              />
+            )}
+          </div>
+        )
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
+      {getLayoutForType(section.type)}
+    </div>
+  )
+}
+
 interface HomePageData {
   settings: {
     topBannerEnabled: boolean
@@ -67,6 +153,7 @@ interface HomePageData {
   carouselBanners: any[]
   promotionalBanners: any[]
   featuredSections: any[]
+  newArrivalSections: any[]
   headlineMessages: any[]
   saleBanners: any[]
   categories: any[]
@@ -123,18 +210,34 @@ async function getHomePageData(): Promise<HomePageData> {
       carouselBanners: [],
       promotionalBanners: [],
       featuredSections: [],
+      newArrivalSections: [], // Added missing property
       headlineMessages: [],
       saleBanners: [],
       categories: [],
       products: [],
-      bestSellingProducts: []
+      bestSellingProducts: [],
+      //@ts-ignore
+      settings: {
+        topBannerEnabled: true,
+        topBannerText: 'Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%!',
+        topBannerLink: '/products',
+        topBannerLinkText: 'ShopNow',
+        heroSectionEnabled: true,
+        categoriesEnabled: true,
+        flashSaleEnabled: true,
+        bestSellingEnabled: true,
+        featuredBannerEnabled: true,
+        exploreProductsEnabled: true,
+        newArrivalEnabled: true,
+        servicesEnabled: true
+      }
     }
   }
 }
 
 export default async function Home() {
   const homeData = await getHomePageData()
-  const { settings, carouselBanners, categories, bestSellingProducts } = homeData
+  const { settings, carouselBanners, categories, bestSellingProducts, newArrivalSections } = homeData
 
 
 
@@ -433,74 +536,11 @@ export default async function Home() {
             )}
 
             {/* New Arrival */}
-            {settings.newArrivalEnabled && (
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
-                <div className="relative h-[400px] bg-black rounded-lg overflow-hidden">
-                  <div className="absolute z-10 inset-0 p-8 flex flex-col justify-center text-white">
-                    <h3 className="text-3xl font-bold mb-4">PlayStation 5</h3>
-                    <p className="mb-4">Black and White Version of PS5 Coming Out</p>
-                    <button className="flex items-center gap-4 text-color-text-1 bg-transparent text-white">
-                      <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
-                      <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path></svg>
-                    </button>
-                  </div>
-                  <Image
-                    src="/assets/images/ps5.png"
-                    alt="PS5"
-                    fill
-                    className="opacity-75"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="relative col-span-2 h-[185px] bg-black rounded-lg overflow-hidden">
-                    <div className="col-span-2 flex items-end p-10 rounded-sm bg-[url(/assets/images/women.png)] bg-color-bg-1 bg-no-repeat bg-contain bg-right   ">
-                      <div className="space-y-4">
-                        <div className="text-color-text-1 space-y-1">
-                          <p className="text-[26px] capitalize max-2xl:text-2xl  text-white">Women’s Collections</p>
-                          <p className="text-base max-2xl:text-sm text-white">Featured woman collections that give you another vibe.</p>
-                        </div>
-                        <button className="flex items-center gap-4 text-color-text-1 bg-transparent text-white">
-                          <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
-                          <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path></svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative h-[185px] bg-black rounded-lg overflow-hidden text-white ">
-                    <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
-                      <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
-                        src={'/assets/images/speaker.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
-                      <div className="space-y-4 absolute bottom-0 left-0 p-4 lg:p-10">
-                        <div className="text-color-text-1 space-y-1">
-                          <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Speakers</p>
-                          <p className="text-base max-2xl:text-sm">Amazon wireless speakers</p></div>
-                        <button className="flex items-center gap-4 text-color-text-1 bg-transparent group __className_6dd009">
-                          <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
-                          <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative h-[185px] bg-black rounded-lg overflow-hidden text-white">
-                    <div className="flex items-end p-4 rounded-sm bg-color-bg-1 relative">
-                      <Image alt="banner" loading="lazy" width="300" height="300" decoding="async"
-                        src={'/assets/images/gucci-perfume.png'} className="h-52 object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] max-2xl:h-40" />
-                      <div className="space-y-4 absolute bottom-0 left-0 p-4 lg:p-10">
-                        <div className="text-color-text-1 space-y-1">
-                          <p className="text-[26px] capitalize max-2xl:text-2xl __className_153980">Perfume</p>
-                          <p className="text-base max-2xl:text-sm">GUCCI INTENSE OUD EDP</p></div>
-                        <button className="flex items-center gap-4 text-color-text-1 bg-transparent group __className_6dd009">
-                          <p className="underline capitalize underline-offset-[10px] text-lg max-2xl:text-base">shop now</p>
-                          <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" className="w-6 h-6 opacity-0 -translate-x-4 duration-300 ease-in-out transition-all group-hover:translate-x-0 group-hover:opacity-100" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {settings.newArrivalEnabled && newArrivalSections?.length > 0 && (
+              <section className="space-y-6 mt-3">
+                {newArrivalSections.map((section: any) => (
+                  <NewArrivalSection key={section.id} section={section} />
+                ))}
               </section>
             )}
 

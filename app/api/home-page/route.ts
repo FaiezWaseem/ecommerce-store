@@ -64,6 +64,12 @@ console.log('Fetched at', new Date(), settings);
       orderBy: { sortOrder: 'asc' }
     })
 
+    // Fetch active new arrival sections
+    const newArrivalSections = await prisma.newArrivalSection.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' }
+    })
+
     // Fetch active headline messages
     const headlineMessages = await prisma.headlineMessage.findMany({
       where: {
@@ -152,6 +158,7 @@ console.log('Fetched at', new Date(), settings);
       carouselBanners,
       promotionalBanners,
       featuredSections,
+      newArrivalSections,
       headlineMessages,
       saleBanners,
       categories,

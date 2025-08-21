@@ -536,3 +536,30 @@ model SaleBanner {
 
   @@map("sale_banners")
 }
+
+model NewArrivalSection {
+  id          String             @id @default(cuid())
+  title       String
+  subtitle    String?
+  description String?
+  image       String?
+  bgColor     String?            @default("#000000")
+  textColor   String?            @default("#ffffff")
+  buttonText  String?
+  buttonLink  String?
+  type        NewArrivalSectionType @default(PLAYSTATION)
+  isActive    Boolean            @default(true)
+  sortOrder   Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("new_arrival_sections")
+}
+
+enum NewArrivalSectionType {
+  PLAYSTATION
+  WOMENS_COLLECTION
+  SPEAKERS
+  PERFUME
+  CUSTOM
+}

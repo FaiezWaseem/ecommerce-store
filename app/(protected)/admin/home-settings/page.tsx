@@ -157,6 +157,21 @@ interface FlashSaleProduct {
   sortOrder: number
 }
 
+interface NewArrivalSection {
+  id: string
+  title: string
+  subtitle?: string
+  description?: string
+  image?: string
+  bgColor: string
+  textColor: string
+  buttonText?: string
+  buttonLink?: string
+  type: 'PLAYSTATION' | 'WOMENS_COLLECTION' | 'SPEAKERS' | 'PERFUME' | 'CUSTOM'
+  isActive: boolean
+  sortOrder: number
+}
+
 export default function HomeSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -168,6 +183,7 @@ export default function HomeSettingsPage() {
   const [saleBanners, setSaleBanners] = useState<SaleBanner[]>([])
   const [flashSaleProducts, setFlashSaleProducts] = useState<FlashSaleProduct[]>([])
   const [flashSaleEndTime, setFlashSaleEndTime] = useState<string>('')
+  const [newArrivalSections, setNewArrivalSections] = useState<NewArrivalSection[]>([])
   const [activeTab, setActiveTab] = useState('general')
 
   // Modal states
@@ -178,6 +194,7 @@ export default function HomeSettingsPage() {
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false)
   const [isFlashSaleModalOpen, setIsFlashSaleModalOpen] = useState(false)
   const [isFeaturedSectionModalOpen, setIsFeaturedSectionModalOpen] = useState(false)
+  const [isNewArrivalModalOpen, setIsNewArrivalModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [headlineForm, setHeadlineForm] = useState({
     message: '',
@@ -226,6 +243,19 @@ export default function HomeSettingsPage() {
     isActive: true
   })
 
+  const [newArrivalForm, setNewArrivalForm] = useState({
+    title: '',
+    subtitle: '',
+    description: '',
+    image: '',
+    bgColor: '#000000',
+    textColor: '#ffffff',
+    buttonText: '',
+    buttonLink: '',
+    type: 'PLAYSTATION' as 'PLAYSTATION' | 'WOMENS_COLLECTION' | 'SPEAKERS' | 'PERFUME' | 'CUSTOM',
+    isActive: true
+  })
+
   useEffect(() => {
     fetchData()
   }, [])
@@ -233,14 +263,15 @@ export default function HomeSettingsPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [settingsRes, carouselRes, promotionalRes, featuredRes, headlineRes, saleRes, flashSaleRes] = await Promise.all([
+      const [settingsRes, carouselRes, promotionalRes, featuredRes, headlineRes, saleRes, flashSaleRes, newArrivalRes] = await Promise.all([
         fetch('/api/home-settings'),
         fetch('/api/home-settings/carousel'),
         fetch('/api/home-settings/promotional'),
         fetch('/api/home-settings/featured'),
         fetch('/api/home-settings/headline'),
         fetch('/api/home-settings/sale'),
-        fetch('/api/home-settings/flash-sale')
+        fetch('/api/home-settings/flash-sale'),
+        fetch('/api/home-settings/new-arrival')
       ])
 
       if (settingsRes.ok) {
@@ -274,6 +305,10 @@ export default function HomeSettingsPage() {
       if (flashSaleRes.ok) {
         const flashSaleData = await flashSaleRes.json()
         setFlashSaleProducts(flashSaleData)
+      }
+      if (newArrivalRes.ok) {
+        const newArrivalData = await newArrivalRes.json()
+        setNewArrivalSections(newArrivalData)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -760,6 +795,74 @@ export default function HomeSettingsPage() {
     }
   }
 
+  const handleSaveNewArrival = async () => {
+    try {
+      setSaving(true)
+      const url = editingItem ? `/api/home-settings/new-arrival/${editingItem.id}` : '/api/home-settings/new-arrival'
+      const method = editingItem ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...newArrivalForm,
+          sortOrder: editingItem ? editingItem.sortOrder : newArrivalSections.length
+        })
+      })
+
+      if (response.ok) {
+        toast.success(`New arrival section ${editingItem ? 'updated' : 'created'} successfully`)
+        setIsNewArrivalModalOpen(false)
+        setEditingItem(null)
+        setNewArrivalForm({
+          title: '',
+          subtitle: '',
+          description: '',
+          image: '',
+          bgColor: '#000000',
+          textColor: '#ffffff',
+          buttonText: '',
+          buttonLink: '',
+          type: 'PLAYSTATION',
+          isActive: true
+        })
+        fetchData()
+      } else {
+        throw new Error(`Failed to ${editingItem ? 'update' : 'create'} new arrival section`)
+      }
+    } catch (error) {
+      console.error('Error saving new arrival section:', error)
+      toast.error(`Failed to ${editingItem ? 'update' : 'create'} new arrival section`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteNewArrival = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this new arrival section?')) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/home-settings/new-arrival/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        toast.success('New arrival section deleted successfully')
+        fetchData() // Refresh the data
+      } else {
+        throw new Error('Failed to delete new arrival section')
+      }
+    } catch (error) {
+      console.error('Error deleting new arrival section:', error)
+      toast.error('Failed to delete new arrival section')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -785,7 +888,7 @@ export default function HomeSettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid grid-cols-7">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             General
@@ -801,6 +904,10 @@ export default function HomeSettingsPage() {
           <TabsTrigger value="featured" className="flex items-center gap-2">
             <Star className="w-4 h-4" />
             Featured
+          </TabsTrigger>
+          <TabsTrigger value="new-arrival" className="flex items-center gap-2">
+            <Package className="w-4 h-4" />
+            New Arrival
           </TabsTrigger>
           <TabsTrigger value="messages" className="flex items-center gap-2">
             <Megaphone className="w-4 h-4" />
@@ -1232,6 +1339,132 @@ export default function HomeSettingsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleDeleteFeaturedSection(section.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="new-arrival" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  New Arrival Sections
+                </CardTitle>
+                <Button onClick={() => {
+                  setNewArrivalForm({
+                    title: '',
+                    subtitle: '',
+                    description: '',
+                    image: '',
+                    bgColor: '#000000',
+                    textColor: '#ffffff',
+                    buttonText: '',
+                    buttonLink: '',
+                    type: 'CUSTOM',
+                    isActive: true
+                  })
+                  setEditingItem(null)
+                  setIsNewArrivalModalOpen(true)
+                }} className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Arrival Section
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {newArrivalSections.length === 0 ? (
+                <div className="text-center py-8">
+                  <Package className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No New Arrival Sections</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Create new arrival sections to showcase your latest products
+                  </p>
+                  <Button onClick={() => {
+                    setNewArrivalForm({
+                      title: '',
+                      subtitle: '',
+                      description: '',
+                      image: '',
+                      bgColor: '#000000',
+                      textColor: '#ffffff',
+                      buttonText: '',
+                      buttonLink: '',
+                      type: 'CUSTOM',
+                      isActive: true
+                    })
+                    setEditingItem(null)
+                    setIsNewArrivalModalOpen(true)
+                  }} className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Your First New Arrival Section
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {newArrivalSections.map((section) => (
+                    <Card key={section.id} className="border">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-lg">{section.title}</h3>
+                              <Badge variant={section.isActive ? 'default' : 'secondary'}>
+                                {section.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                              <Badge variant="outline">{section.type}</Badge>
+                            </div>
+                            {section.subtitle && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{section.subtitle}</p>
+                            )}
+                            {section.description && (
+                              <p className="text-sm text-gray-500 dark:text-gray-500 mb-2">{section.description}</p>
+                            )}
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span>Colors: {section.bgColor} / {section.textColor}</span>
+                              {section.buttonText && (
+                                <span>Button: {section.buttonText}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setNewArrivalForm({
+                                  title: section.title,
+                                  subtitle: section.subtitle || '',
+                                  description: section.description || '',
+                                  image: section.image || '',
+                                  bgColor: section.bgColor,
+                                  textColor: section.textColor,
+                                  buttonText: section.buttonText || '',
+                                  buttonLink: section.buttonLink || '',
+                                  type: section.type,
+                                  isActive: section.isActive
+                                })
+                                setEditingItem(section)
+                                setIsNewArrivalModalOpen(true)
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteNewArrival(section.id)}
                               className="text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1873,7 +2106,182 @@ export default function HomeSettingsPage() {
         form={featuredForm}
         setForm={setFeaturedForm}
       />
+      <NewArrivalSectionModal
+        isOpen={isNewArrivalModalOpen}
+        onClose={() => {
+          setIsNewArrivalModalOpen(false)
+          setEditingItem(null)
+        }}
+        onSave={handleSaveNewArrival}
+        editingItem={editingItem as NewArrivalSection | null}
+        form={newArrivalForm}
+        setForm={setNewArrivalForm}
+      />
     </div>
+  )
+}
+
+const NewArrivalSectionModal = ({ isOpen, onClose, onSave, editingItem, form, setForm }: {
+  isOpen: boolean
+  onClose: () => void
+  onSave: () => void
+  editingItem: NewArrivalSection | null
+  form: any
+  setForm: (form: any) => void
+}) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {editingItem ? 'Edit New Arrival Section' : 'Add New Arrival Section'}
+          </DialogTitle>
+          <DialogDescription>
+            Create engaging new arrival sections to showcase your latest products
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="Enter section title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="subtitle">Subtitle</Label>
+              <Input
+                id="subtitle"
+                value={form.subtitle}
+                onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
+                placeholder="Enter section subtitle"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Enter section description"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image">Image URL</Label>
+            <Input
+              id="image"
+              value={form.image}
+              onChange={(e) => setForm({ ...form, image: e.target.value })}
+              placeholder="Enter image URL"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bgColor">Background Color</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="bgColor"
+                  type="color"
+                  value={form.bgColor}
+                  onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
+                  className="w-16 h-10 p-1 border rounded"
+                />
+                <Input
+                  value={form.bgColor}
+                  onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
+                  placeholder="#000000"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="textColor">Text Color</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="textColor"
+                  type="color"
+                  value={form.textColor}
+                  onChange={(e) => setForm({ ...form, textColor: e.target.value })}
+                  className="w-16 h-10 p-1 border rounded"
+                />
+                <Input
+                  value={form.textColor}
+                  onChange={(e) => setForm({ ...form, textColor: e.target.value })}
+                  placeholder="#ffffff"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="buttonText">Button Text</Label>
+              <Input
+                id="buttonText"
+                value={form.buttonText}
+                onChange={(e) => setForm({ ...form, buttonText: e.target.value })}
+                placeholder="Enter button text"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="buttonLink">Button Link</Label>
+              <Input
+                id="buttonLink"
+                value={form.buttonLink}
+                onChange={(e) => setForm({ ...form, buttonLink: e.target.value })}
+                placeholder="Enter button link"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="type">Section Type</Label>
+            <Select value={form.type} onValueChange={(value) => setForm({ ...form, type: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select section type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PLAYSTATION">PlayStation</SelectItem>
+                <SelectItem value="WOMENS_COLLECTION">{"Women's Collection"}</SelectItem>
+                <SelectItem value="SPEAKERS">Speakers</SelectItem>
+                <SelectItem value="PERFUME">Perfume</SelectItem>
+                <SelectItem value="CUSTOM">Custom</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isActive"
+                checked={form.isActive}
+                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                className="rounded"
+              />
+              <Label htmlFor="isActive">Active</Label>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={onSave} disabled={!form.title}>
+            {editingItem ? 'Update' : 'Create'} Section
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

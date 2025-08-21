@@ -722,7 +722,7 @@ export default function EditProduct() {
                       ))}
                       {colors.length === 0 && (
                         <p className="text-sm text-muted-foreground text-center py-4">
-                          No colors added yet. Click "Add Color" to add color options for this product.
+                          {`No colors added yet. Click "Add Color" to add color options for this product.`}
                         </p>
                       )}
                     </div>
@@ -769,7 +769,7 @@ export default function EditProduct() {
                       ))}
                       {sizes.length === 0 && (
                         <p className="text-sm text-muted-foreground text-center py-4">
-                          No sizes added yet. Click "Add Size" to add size options for this product.
+                          No sizes added yet. Click &quot;Add Size&quot; to add size options for this product.
                         </p>
                       )}
                     </div>
