@@ -49,6 +49,8 @@ export async function GET(
         images: {
           orderBy: { sortOrder: 'asc' },
         },
+        colors: true,
+        sizes: true,
         reviews: {
           include: {
             user: {

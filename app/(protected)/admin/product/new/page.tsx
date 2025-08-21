@@ -93,6 +93,10 @@ export default function AddProduct() {
     const [featuredVideoLink, setFeaturedVideoLink] = useState('');
     const [featuredVideoFile, setFeaturedVideoFile] = useState<string | null>(null);
     const [uploadingVideo, setUploadingVideo] = useState(false);
+    
+    // Color and Size options
+    const [colors, setColors] = useState<{name: string, value: string}[]>([]);
+    const [sizes, setSizes] = useState<{name: string, value: string}[]>([]);
 
     // Fetch categories on component mount
     useEffect(() => {
@@ -145,6 +149,36 @@ export default function AddProduct() {
     const removeGalleryImage = (index: number) => {
         setGalleryImages(galleryImages.filter((_, i) => i !== index))
     }
+
+    // Color management functions
+    const addColor = () => {
+        setColors([...colors, { name: '', value: '' }]);
+    };
+
+    const removeColor = (index: number) => {
+        setColors(colors.filter((_, i) => i !== index));
+    };
+
+    const updateColor = (index: number, field: 'name' | 'value', value: string) => {
+        const updated = [...colors];
+        updated[index][field] = value;
+        setColors(updated);
+    };
+
+    // Size management functions
+    const addSize = () => {
+        setSizes([...sizes, { name: '', value: '' }]);
+    };
+
+    const removeSize = (index: number) => {
+        setSizes(sizes.filter((_, i) => i !== index));
+    };
+
+    const updateSize = (index: number, field: 'name' | 'value', value: string) => {
+        const updated = [...sizes];
+        updated[index][field] = value;
+        setSizes(updated);
+    };
 
     const uploadFile = async (file: File): Promise<string> => {
         const formData = new FormData();
@@ -257,6 +291,8 @@ export default function AddProduct() {
                 height: formData.height ? parseFloat(formData.height) : null,
                 menuOrder: parseInt(formData.menuOrder.toString()) || 0,
                 attributes: attributes.filter(attr => attr.name && attr.value),
+                colors: colors.filter(color => color.name && color.value),
+                sizes: sizes.filter(size => size.name && size.value),
                 images: images,
                 featuredVideoType: featuredVideoType.toUpperCase(),
                 featuredVideoLink: featuredVideoType === 'link' ? featuredVideoLink : null,
@@ -438,6 +474,7 @@ export default function AddProduct() {
                                                 <TabsTrigger value="general">General</TabsTrigger>
                                                 <TabsTrigger value="inventory">Inventory</TabsTrigger>
                                                 <TabsTrigger value="shipping">Shipping</TabsTrigger>
+                                                <TabsTrigger value="variants">Variants</TabsTrigger>
                                                 <TabsTrigger value="linked-products">Linked Products</TabsTrigger>
                                                 <TabsTrigger value="attributes">Attributes</TabsTrigger>
                                                 <TabsTrigger value="advanced">Advanced</TabsTrigger>
@@ -595,6 +632,109 @@ export default function AddProduct() {
                                                 ) : (
                                                     <p>This is a virtual product and does not require shipping.</p>
                                                 )}
+                                            </TabsContent>
+                                            <TabsContent value="variants" className="space-y-4">
+                                                <div className="space-y-6">
+                                                    {/* Colors Section */}
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label className="text-base font-medium">Colors (Optional)</Label>
+                                                            <Button variant="outline" size="sm" onClick={addColor}>
+                                                                <Plus className="mr-2 h-4 w-4" /> Add Color
+                                                            </Button>
+                                                        </div>
+                                                        {colors.map((color, index) => (
+                                                            <div key={index} className="space-y-2 p-4 border rounded-lg">
+                                                                <div className="flex items-center justify-between">
+                                                                    <Label>Color {index + 1}</Label>
+                                                                    <Button variant="outline" size="icon" onClick={() => removeColor(index)}>
+                                                                        <X className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor={`color-name-${index}`}>Color Name</Label>
+                                                                        <Input 
+                                                                            id={`color-name-${index}`}
+                                                                            placeholder="e.g., Red, Blue, Green" 
+                                                                            value={color.name}
+                                                                            onChange={(e) => updateColor(index, 'name', e.target.value)}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor={`color-value-${index}`}>Color Code/Value</Label>
+                                                                        <div className="flex gap-2">
+                                                                            <Input 
+                                                                                id={`color-value-${index}`}
+                                                                                placeholder="#FF0000 or red" 
+                                                                                value={color.value}
+                                                                                onChange={(e) => updateColor(index, 'value', e.target.value)}
+                                                                            />
+                                                                            {color.value && color.value.startsWith('#') && (
+                                                                                <div 
+                                                                                    className="w-10 h-10 rounded border border-gray-300" 
+                                                                                    style={{ backgroundColor: color.value }}
+                                                                                ></div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {colors.length === 0 && (
+                                                            <p className="text-sm text-muted-foreground text-center py-4">
+                                                                No colors added yet. Click "Add Color" to add color options for this product.
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <Separator />
+
+                                                    {/* Sizes Section */}
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <Label className="text-base font-medium">Sizes (Optional)</Label>
+                                                            <Button variant="outline" size="sm" onClick={addSize}>
+                                                                <Plus className="mr-2 h-4 w-4" /> Add Size
+                                                            </Button>
+                                                        </div>
+                                                        {sizes.map((size, index) => (
+                                                            <div key={index} className="space-y-2 p-4 border rounded-lg">
+                                                                <div className="flex items-center justify-between">
+                                                                    <Label>Size {index + 1}</Label>
+                                                                    <Button variant="outline" size="icon" onClick={() => removeSize(index)}>
+                                                                        <X className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor={`size-name-${index}`}>Size Name</Label>
+                                                                        <Input 
+                                                                            id={`size-name-${index}`}
+                                                                            placeholder="e.g., Small, Medium, Large" 
+                                                                            value={size.name}
+                                                                            onChange={(e) => updateSize(index, 'name', e.target.value)}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor={`size-value-${index}`}>Size Value</Label>
+                                                                        <Input 
+                                                                            id={`size-value-${index}`}
+                                                                            placeholder="S, M, L, XL or 32, 34, 36" 
+                                                                            value={size.value}
+                                                                            onChange={(e) => updateSize(index, 'value', e.target.value)}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {sizes.length === 0 && (
+                                                            <p className="text-sm text-muted-foreground text-center py-4">
+                                                                No sizes added yet. Click "Add Size" to add size options for this product.
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </TabsContent>
                                             <TabsContent value="linked-products" className="space-y-4">
                                                 {linkedProducts.map((_, index) => (

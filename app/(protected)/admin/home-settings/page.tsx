@@ -177,6 +177,7 @@ export default function HomeSettingsPage() {
   const [isHeadlineModalOpen, setIsHeadlineModalOpen] = useState(false)
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false)
   const [isFlashSaleModalOpen, setIsFlashSaleModalOpen] = useState(false)
+  const [isFeaturedSectionModalOpen, setIsFeaturedSectionModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [headlineForm, setHeadlineForm] = useState({
     message: '',
@@ -208,6 +209,21 @@ export default function HomeSettingsPage() {
     isActive: true,
     startDate: '',
     endDate: ''
+  })
+
+  const [featuredForm, setFeaturedForm] = useState({
+    title: '',
+    subtitle: '',
+    description: '',
+    image: '',
+    bgColor: '#000000',
+    textColor: '#ffffff',
+    buttonText: '',
+    buttonLink: '',
+    countdown: false,
+    countdownEnd: '',
+    type: 'CUSTOM' as 'MUSIC' | 'GAMING' | 'FASHION' | 'ELECTRONICS' | 'CUSTOM',
+    isActive: true
   })
 
   useEffect(() => {
@@ -663,6 +679,87 @@ export default function HomeSettingsPage() {
     }
   }
 
+  const handleSaveFeaturedSection = async () => {
+    try {
+      setSaving(true)
+
+      const sectionData = {
+        title: featuredForm.title,
+        subtitle: featuredForm.subtitle,
+        description: featuredForm.description,
+        image: featuredForm.image,
+        bgColor: featuredForm.bgColor,
+        textColor: featuredForm.textColor,
+        buttonText: featuredForm.buttonText,
+        buttonLink: featuredForm.buttonLink,
+        countdown: featuredForm.countdown,
+        countdownEnd: featuredForm.countdownEnd ? new Date(featuredForm.countdownEnd).toISOString() : null,
+        type: featuredForm.type,
+        isActive: featuredForm.isActive
+      }
+
+      const url = editingItem ? `/api/home-settings/featured/${editingItem.id}` : '/api/home-settings/featured'
+      const method = editingItem ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sectionData)
+      })
+
+      if (response.ok) {
+        toast.success(`Featured section ${editingItem ? 'updated' : 'created'} successfully`)
+        setIsFeaturedSectionModalOpen(false)
+        setEditingItem(null)
+        setFeaturedForm({
+          title: '',
+          subtitle: '',
+          description: '',
+          image: '',
+          bgColor: '#000000',
+          textColor: '#ffffff',
+          buttonText: '',
+          buttonLink: '',
+          countdown: false,
+          countdownEnd: '',
+          type: 'CUSTOM',
+          isActive: true
+        })
+        fetchData() // Refresh the data
+      } else {
+        throw new Error(`Failed to ${editingItem ? 'update' : 'create'} featured section`)
+      }
+    } catch (error) {
+      console.error('Error saving featured section:', error)
+      toast.error(`Failed to ${editingItem ? 'update' : 'create'} featured section`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteFeaturedSection = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this featured section?')) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/home-settings/featured/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        toast.success('Featured section deleted successfully')
+        fetchData() // Refresh the data
+      } else {
+        throw new Error('Failed to delete featured section')
+      }
+    } catch (error) {
+      console.error('Error deleting featured section:', error)
+      toast.error('Failed to delete featured section')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -1015,13 +1112,137 @@ export default function HomeSettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="featured">
+        <TabsContent value="featured" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Featured Sections</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-5 h-5" />
+                  Featured Sections
+                </CardTitle>
+                <Button onClick={() => {
+                  setFeaturedForm({
+                    title: '',
+                    subtitle: '',
+                    description: '',
+                    image: '',
+                    bgColor: '#000000',
+                    textColor: '#ffffff',
+                    buttonText: '',
+                    buttonLink: '',
+                    countdown: false,
+                    countdownEnd: '',
+                    type: 'CUSTOM',
+                    isActive: true
+                  })
+                  setEditingItem(null)
+                  setIsFeaturedSectionModalOpen(true)
+                }} className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Featured Section
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 dark:text-gray-400">Featured sections management coming soon...</p>
+              {featuredSections.length === 0 ? (
+                <div className="text-center py-8">
+                  <Star className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Featured Sections</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Create featured sections to highlight special content on your homepage
+                  </p>
+                  <Button onClick={() => {
+                    setFeaturedForm({
+                      title: '',
+                      subtitle: '',
+                      description: '',
+                      image: '',
+                      bgColor: '#000000',
+                      textColor: '#ffffff',
+                      buttonText: '',
+                      buttonLink: '',
+                      countdown: false,
+                      countdownEnd: '',
+                      type: 'CUSTOM',
+                      isActive: true
+                    })
+                    setEditingItem(null)
+                    setIsFeaturedSectionModalOpen(true)
+                  }} className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Your First Featured Section
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {featuredSections.map((section) => (
+                    <Card key={section.id} className="border">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-lg">{section.title}</h3>
+                              <Badge variant={section.isActive ? 'default' : 'secondary'}>
+                                {section.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
+                              <Badge variant="outline">{section.type}</Badge>
+                            </div>
+                            {section.subtitle && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{section.subtitle}</p>
+                            )}
+                            {section.description && (
+                              <p className="text-sm text-gray-500 dark:text-gray-500 mb-2">{section.description}</p>
+                            )}
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span>Colors: {section.bgColor} / {section.textColor}</span>
+                              {section.countdown && section.countdownEnd && (
+                                <span>Countdown: {new Date(section.countdownEnd).toLocaleDateString()}</span>
+                              )}
+                              {section.buttonText && (
+                                <span>Button: {section.buttonText}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setFeaturedForm({
+                                  title: section.title,
+                                  subtitle: section.subtitle || '',
+                                  description: section.description || '',
+                                  image: section.image || '',
+                                  bgColor: section.bgColor,
+                                  textColor: section.textColor,
+                                  buttonText: section.buttonText || '',
+                                  buttonLink: section.buttonLink || '',
+                                  countdown: section.countdown,
+                                  countdownEnd: section.countdownEnd ? new Date(section.countdownEnd).toISOString().slice(0, 16) : '',
+                                  type: section.type,
+                                  isActive: section.isActive
+                                })
+                                setEditingItem(section)
+                                setIsFeaturedSectionModalOpen(true)
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteFeaturedSection(section.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -1641,6 +1862,17 @@ export default function HomeSettingsPage() {
         editingItem={promotionalForm as PromotionalBanner}
         onSave={handleSavePromotionalBanner}
       />
+      <FeaturedSectionModal
+        isOpen={isFeaturedSectionModalOpen}
+        onClose={() => {
+          setIsFeaturedSectionModalOpen(false)
+          setEditingItem(null)
+        }}
+        onSave={handleSaveFeaturedSection}
+        editingItem={editingItem as FeaturedSection | null}
+        form={featuredForm}
+        setForm={setFeaturedForm}
+      />
     </div>
   )
 }
@@ -2153,6 +2385,193 @@ const FlashSaleProductModal = ({ isOpen, onClose, onSave }: {
           </Button>
           <Button onClick={handleSubmit} disabled={!selectedProduct}>
             Add to Flash Sale
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const FeaturedSectionModal = ({ isOpen, onClose, onSave, editingItem, form, setForm }: {
+  isOpen: boolean
+  onClose: () => void
+  onSave: () => void
+  editingItem: FeaturedSection | null
+  form: any
+  setForm: (form: any) => void
+}) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {editingItem ? 'Edit Featured Section' : 'Add Featured Section'}
+          </DialogTitle>
+          <DialogDescription>
+            Create engaging featured sections to highlight special content on your homepage
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="Enter section title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="subtitle">Subtitle</Label>
+              <Input
+                id="subtitle"
+                value={form.subtitle}
+                onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
+                placeholder="Enter section subtitle"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Enter section description"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image">Image URL</Label>
+            <Input
+              id="image"
+              value={form.image}
+              onChange={(e) => setForm({ ...form, image: e.target.value })}
+              placeholder="Enter image URL"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bgColor">Background Color</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="bgColor"
+                  type="color"
+                  value={form.bgColor}
+                  onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
+                  className="w-16 h-10 p-1 border rounded"
+                />
+                <Input
+                  value={form.bgColor}
+                  onChange={(e) => setForm({ ...form, bgColor: e.target.value })}
+                  placeholder="#000000"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="textColor">Text Color</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="textColor"
+                  type="color"
+                  value={form.textColor}
+                  onChange={(e) => setForm({ ...form, textColor: e.target.value })}
+                  className="w-16 h-10 p-1 border rounded"
+                />
+                <Input
+                  value={form.textColor}
+                  onChange={(e) => setForm({ ...form, textColor: e.target.value })}
+                  placeholder="#ffffff"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="buttonText">Button Text</Label>
+              <Input
+                id="buttonText"
+                value={form.buttonText}
+                onChange={(e) => setForm({ ...form, buttonText: e.target.value })}
+                placeholder="Enter button text"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="buttonLink">Button Link</Label>
+              <Input
+                id="buttonLink"
+                value={form.buttonLink}
+                onChange={(e) => setForm({ ...form, buttonLink: e.target.value })}
+                placeholder="Enter button link"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="type">Section Type</Label>
+            <Select value={form.type} onValueChange={(value) => setForm({ ...form, type: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select section type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MUSIC">Music</SelectItem>
+                <SelectItem value="GAMING">Gaming</SelectItem>
+                <SelectItem value="FASHION">Fashion</SelectItem>
+                <SelectItem value="ELECTRONICS">Electronics</SelectItem>
+                <SelectItem value="CUSTOM">Custom</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="countdown"
+                checked={form.countdown}
+                onChange={(e) => setForm({ ...form, countdown: e.target.checked })}
+                className="rounded"
+              />
+              <Label htmlFor="countdown">Enable Countdown Timer</Label>
+            </div>
+
+            {form.countdown && (
+              <div className="space-y-2">
+                <Label htmlFor="countdownEnd">Countdown End Date</Label>
+                <Input
+                  id="countdownEnd"
+                  type="datetime-local"
+                  value={form.countdownEnd}
+                  onChange={(e) => setForm({ ...form, countdownEnd: e.target.value })}
+                />
+              </div>
+            )}
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isActive"
+                checked={form.isActive}
+                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                className="rounded"
+              />
+              <Label htmlFor="isActive">Active</Label>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={onSave} disabled={!form.title}>
+            {editingItem ? 'Update' : 'Create'} Section
           </Button>
         </DialogFooter>
       </DialogContent>

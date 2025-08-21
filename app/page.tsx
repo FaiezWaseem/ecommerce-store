@@ -14,6 +14,7 @@ import FlashSale from "@/components/HomeScreen/flash-sale"
 import SaleBanner from '@/components/HomeScreen/sale-banner'
 import ExploreProducts from "@/components/explore-products/explore-products"
 import { products } from "./constants"
+import CountdownTimer from "@/components/CountdownTimer"
 
 // SEO Metadata
 export const metadata: Metadata = {
@@ -305,38 +306,16 @@ export default async function Home() {
             )}
 
             {/* Enhance Your Music Experience */}
-            {settings.featuredBannerEnabled && (
-              <section className="relative h-[400px] bg-black rounded-lg overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-between p-12">
-                  <div className="text-white space-y-4">
-                    <span className="text-app_red">Categories</span>
-                    <h2 className="text-4xl font-bold">Enhance Your<br />Music Experience</h2>
-                    <div className="flex gap-4 lg:gap-8">
-                      {[
-                        { value: '23', label: 'Hours' },
-                        { value: '05', label: 'Days' },
-                        { value: '59', label: 'Minutes' },
-                        { value: '35', label: 'Seconds' },
-                      ].map((item) => (
-                        <div key={item.label} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white text-black flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="text-sm font-bold">{item.value}</div>
-                            <div className="text-xs">{item.label}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <Button className="bg-app_red hover:bg-red-600">Buy Now!</Button>
-                  </div>
-                  <Image
-                    src="/assets/images/JBL_BOOMBAX.png"
-                    alt="Speaker"
-                    width={400}
-                    height={400}
-                    className="hidden md:block"
-                  />
-                </div>
-              </section>
+            {/* Dynamic Featured Sections */}
+            {settings.featuredBannerEnabled && homeData.featuredSections.length > 0 && (
+              <div className="space-y-8">
+                {homeData.featuredSections
+                  .filter((section: any) => section.isActive)
+                  .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+                  .map((section: any) => (
+                    <FeaturedSection key={section.id} section={section} />
+                  ))}
+              </div>
             )}
 
             {/* Explore Our Products */}
@@ -607,6 +586,58 @@ export default async function Home() {
       {/* Footer */}
       <Footer />
     </div>
+  )
+}
+
+// Featured Section Component
+function FeaturedSection({ section }: { section: any }) {
+  return (
+    <section 
+      className="relative h-[400px] rounded-lg overflow-hidden"
+      style={{ backgroundColor: section.bgColor }}
+    >
+      <div className="absolute inset-0 flex items-center justify-between p-12">
+        <div className="space-y-4" style={{ color: section.textColor }}>
+          {section.subtitle && (
+            <span className="text-app_red">{section.subtitle}</span>
+          )}
+          <h2 className="text-4xl font-bold">
+            {section.title.split('\n').map((line: string, index: number) => (
+              <span key={index}>
+                {line}
+                {index < section.title.split('\n').length - 1 && <br />}
+              </span>
+            ))}
+          </h2>
+          
+          {section.description && (
+            <p className="text-lg opacity-90">{section.description}</p>
+          )}
+          
+          {section.countdown && section.countdownEnd && (
+            <CountdownTimer endDate={section.countdownEnd} />
+          )}
+          
+          {section.buttonText && section.buttonLink && (
+            <Link href={section.buttonLink}>
+              <Button className="bg-app_red hover:bg-red-600">
+                {section.buttonText}
+              </Button>
+            </Link>
+          )}
+        </div>
+        
+        {section.image && (
+          <Image
+            src={section.image}
+            alt={section.title}
+            width={400}
+            height={400}
+            className="hidden md:block object-contain"
+          />
+        )}
+      </div>
+    </section>
   )
 }
 

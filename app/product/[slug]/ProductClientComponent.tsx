@@ -54,6 +54,7 @@ export default function ProductClientComponent({
     const [selectedSize, setSelectedSize] = useState('m')
     const [emblaApi, setEmblaApi] = useState<CarouselApi | null>(null)
 
+
     const onSelect = useCallback((api: CarouselApi) => {
         setEmblaApi(api)
     }, [])
@@ -248,50 +249,47 @@ export default function ProductClientComponent({
                     <div className="space-y-4">
                         {/* Colors */}
                         <div>
-                            <h3 className="mb-2 font-medium">Colours:</h3>
+                         {product.colors && product.colors.length > 0 &&   <h3 className="mb-2 font-medium">Colours:</h3>}
                             <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="flex gap-2">
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem
-                                        value="white"
-                                        id="white"
-                                        className="border-2 border-gray-300"
-                                    />
-                                    <label htmlFor="white" className="text-sm">
-                                        White
-                                    </label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <RadioGroupItem
-                                        value="pink"
-                                        id="pink"
-                                        className="border-2 border-pink-300 bg-pink-500"
-                                    />
-                                    <label htmlFor="pink" className="text-sm">
-                                        Pink
-                                    </label>
-                                </div>
+                                {product.colors?.map((color: any) => (
+                                    <div className="flex items-center space-x-2" key={color.id}>
+                                        <RadioGroupItem
+                                            value={color.value}
+                                            id={color.name}
+                                            className="border-2 border-gray-300"
+                                        />
+                                        <label htmlFor={color.name} className="text-sm">
+                                            {color.name}
+                                        </label>
+                                    </div>
+                                ))}
+
                             </RadioGroup>
                         </div>
 
                         {/* Size - stacked on mobile, side-by-side on lg+ */}
                         <div>
-                            <h3 className="mb-2 font-medium">Size:</h3>
+                            {product.sizes && product.sizes.length > 0 && <h3 className="mb-2 font-medium">Size:</h3>}
                             <RadioGroup value={selectedSize} onValueChange={setSelectedSize} className="flex flex-wrap gap-2">
-                                {["XS", "S", "M", "L", "XL"].map((size) => (
+                                {product.sizes?.map((size: {
+                                    id: string,
+                                    name: string,
+                                    value: string
+                                }) => (
                                     <div
-                                        key={size}
+                                        key={size.id}
                                         className="flex h-10 w-10 items-center justify-center rounded-md border text-sm"
                                     >
                                         <RadioGroupItem
-                                            value={size.toLowerCase()}
-                                            id={size.toLowerCase()}
+                                            value={size.value}
+                                            id={size.value}
                                             className="sr-only"
                                         />
                                         <label
-                                            htmlFor={size.toLowerCase()}
+                                            htmlFor={size.value}
                                             className="cursor-pointer p-2"
                                         >
-                                            {size}
+                                            {size.value}
                                         </label>
                                     </div>
                                 ))}
@@ -406,9 +404,9 @@ export default function ProductClientComponent({
                         </button> */}
 
                     {/* Wishlist */}
-                    <button className="p-2 border border-gray-300 rounded-full bg-white">
+                    {/* <button className="p-2 border border-gray-300 rounded-full bg-white">
                         <Heart className="h-4 w-4 text-primary" />
-                    </button>
+                    </button> */}
                 </div>
             </div>
 

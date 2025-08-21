@@ -28,6 +28,14 @@ const createProductSchema = z.object({
     isMain: z.boolean().default(false),
     sortOrder: z.number().int().default(0)
   })).optional(),
+  colors: z.array(z.object({
+    name: z.string().min(1, 'Color name is required'),
+    value: z.string().min(1, 'Color value is required')
+  })).optional(),
+  sizes: z.array(z.object({
+    name: z.string().min(1, 'Size name is required'),
+    value: z.string().min(1, 'Size value is required')
+  })).optional(),
 });
 
 // GET /api/products - Get all products with pagination
@@ -68,6 +76,9 @@ export async function GET(request: NextRequest) {
           images: {
             orderBy: { sortOrder: 'asc' },
           },
+          //@ts-ignore
+          colors: true,
+          sizes: true,
           _count: {
             select: {
               reviews: true,
@@ -135,8 +146,8 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Handle image creation if provided
-    const { images, ...productData } = validatedData;
+    // Handle image, color, and size creation if provided
+    const { images, colors, sizes, ...productData } = validatedData;
     
     const product = await prisma.$transaction(async (tx : any) => {
       // Create product
@@ -157,7 +168,29 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Return product with images
+      // Create colors if provided
+      if (colors && colors.length > 0) {
+        await tx.productColor.createMany({
+          data: colors.map((color) => ({
+            productId: newProduct.id,
+            name: color.name,
+            value: color.value,
+          })),
+        });
+      }
+
+      // Create sizes if provided
+      if (sizes && sizes.length > 0) {
+        await tx.productSize.createMany({
+          data: sizes.map((size) => ({
+            productId: newProduct.id,
+            name: size.name,
+            value: size.value,
+          })),
+        });
+      }
+
+      // Return product with images, colors, and sizes
       return await tx.product.findUnique({
         where: { id: newProduct.id },
         include: {
@@ -165,6 +198,8 @@ export async function POST(request: NextRequest) {
           images: {
             orderBy: { sortOrder: 'asc' },
           },
+          colors: true,
+          sizes: true,
         },
       });
     });
