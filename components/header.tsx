@@ -104,18 +104,16 @@ export default function Header(){
           </Link>
           <div className="flex items-center space-x-4 ml-auto">
             <SearchForm className="hidden md:flex" />
-            <Button variant="ghost" size="icon">
-              <Heart className="h-5 w-5" />
-            </Button>
-            <Link href="/cart" className="relative">
+    
+            <Link href="/cart" className="relative hidden lg:flex">
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
               </Button>
             </Link>
             {!authLoading && (
               user ? (
-                <Link href="/account">
-                  <Button variant="ghost" size="icon">
+                <Link href="/account" >
+                  <Button variant="ghost" size="icon" className="hidden lg:flex">
                     <User className="h-5 w-5" />
                   </Button>
                 </Link>

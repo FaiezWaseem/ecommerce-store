@@ -133,7 +133,8 @@ export default function LoginPage() {
         </div>
         <div className="relative hidden md:block">
           <Image
-            src="/placeholder.svg?height=800&width=600"
+            src="/assets/banner/bg-1.jpeg"
+
             alt="Login"
             layout="fill"
             objectFit="cover"

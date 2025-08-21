@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
-import { Apple, Facebook, Instagram, Linkedin, QrCode, Twitter, Home, ShoppingCart, User, Heart as WishList, Search } from 'lucide-react'
+import { Apple, Facebook, Instagram, Linkedin, QrCode, Twitter, Home, ShoppingCart, User, Heart as WishList, Search, Badge } from 'lucide-react'
 import { Play } from 'lucide-react'
 import { BsTiktok } from "react-icons/bs"
 
@@ -16,13 +16,13 @@ function MobileTabBar() {
         <Search className="h-5 w-5" />
         Search
       </Link>
+      <Link href="/categories" className="flex flex-col items-center justify-center text-xs">
+        <Badge className="h-5 w-5" />
+        Categories
+      </Link>
       <Link href="/cart" className="flex flex-col items-center justify-center text-xs">
         <ShoppingCart className="h-5 w-5" />
         Cart
-      </Link>
-      <Link href="#" className="flex flex-col items-center justify-center text-xs">
-        <WishList className="h-5 w-5" />
-        Wishlist
       </Link>
       <Link href="/account" className="flex flex-col items-center justify-center text-xs">
         <User className="h-5 w-5" />
@@ -32,7 +32,7 @@ function MobileTabBar() {
   );
 }
 
-export default function Footer(){
+export default function Footer() {
   return (
     <>
       {/* Desktop/Tablet Footer */}

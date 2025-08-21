@@ -59,7 +59,7 @@ export default function RegisterPage() {
       <Card className="w-full max-w-4xl grid md:grid-cols-2 overflow-hidden">
         <div className="relative hidden md:block">
           <Image
-            src="/placeholder.svg?height=800&width=600"
+            src="/assets/banner/bg-1.jpeg"
             alt="Register"
             layout="fill"
             objectFit="cover"

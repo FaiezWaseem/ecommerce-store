@@ -455,7 +455,7 @@ export default async function Home() {
 
             {/* New Arrival */}
             {settings.newArrivalEnabled && (
-              <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
                 <div className="relative h-[400px] bg-black rounded-lg overflow-hidden">
                   <div className="absolute z-10 inset-0 p-8 flex flex-col justify-center text-white">
                     <h3 className="text-3xl font-bold mb-4">PlayStation 5</h3>
@@ -576,7 +576,7 @@ export default async function Home() {
 
             {/* Services */}
             {settings.servicesEnabled && (
-              <section className="grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
+              <section className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6 py-12">
                 <div className="flex flex-col items-center text-center">
                   <div className="h-16 w-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                     <Truck className="h-8 w-8" />
