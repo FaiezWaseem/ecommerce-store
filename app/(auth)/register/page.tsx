@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Facebook, Github, ChromeIcon as Google } from 'lucide-react'
+import { Facebook, Github, ChromeIcon as Google, ArrowLeft } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
 import { toast } from 'sonner';
@@ -68,7 +68,13 @@ export default function RegisterPage() {
         </div>
         <div className="p-6 space-y-6">
           <CardHeader className="p-0 space-y-1">
-            <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+              <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Home
+              </Link>
+            </div>
             <CardDescription>
               Enter your details to create your account
             </CardDescription>

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Facebook, Github, ChromeIcon as Google } from 'lucide-react'
+import { Facebook, Github, ChromeIcon as Google, ArrowLeft } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
 import { toast } from 'sonner';
@@ -56,7 +56,13 @@ export default function LoginPage() {
       <Card className="w-full max-w-4xl grid md:grid-cols-2 overflow-hidden">
         <div className="p-6 space-y-6">
           <CardHeader className="p-0 space-y-1">
-            <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+              <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Home
+              </Link>
+            </div>
             <CardDescription>
               Enter your email and password to login
             </CardDescription>
