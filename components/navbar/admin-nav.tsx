@@ -198,7 +198,7 @@ function MobileTabBar({
               }`}
           >
             <Icon className="h-5 w-5" />
-            {item.title}
+            {item.title === 'Home Settings' ? "Setting" : item.title}
           </Link>
         )
       })}

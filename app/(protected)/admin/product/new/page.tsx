@@ -470,7 +470,7 @@ export default function AddProduct() {
                                 <Card>
                                     <CardContent className="p-6">
                                         <Tabs defaultValue="general" className="space-y-4">
-                                            <TabsList className="flex flex-wrap">
+                                            <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 h-auto">
                                                 <TabsTrigger value="general">General</TabsTrigger>
                                                 <TabsTrigger value="inventory">Inventory</TabsTrigger>
                                                 <TabsTrigger value="shipping">Shipping</TabsTrigger>

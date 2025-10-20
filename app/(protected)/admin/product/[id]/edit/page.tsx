@@ -443,7 +443,7 @@ export default function EditProduct() {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Edit Product</h1>
           <p className="text-gray-600 mt-1">Update product information and settings</p>
@@ -516,7 +516,7 @@ export default function EditProduct() {
           <Card>
             <CardContent className="p-0">
               <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-7">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 h-auto">
                   <TabsTrigger value="general">General</TabsTrigger>
                   <TabsTrigger value="inventory">Inventory</TabsTrigger>
                   <TabsTrigger value="shipping">Shipping</TabsTrigger>

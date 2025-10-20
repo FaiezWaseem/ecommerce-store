@@ -239,7 +239,7 @@ export default function AdminProducts() {
             <p className="text-sm text-gray-500 mt-3">Admin View Products</p>
             <hr className="mt-3" />
         </div>
-        <div className="flex-1 space-y-4 p-2 lg:p-8 pt-6">
+        <div className="flex-1 space-y-4 p-2 lg:p-8 pt-6 mb-[80px]">
             <>
                 {/* Mobile list layout */}
                 <div className="md:hidden space-y-3 mb-5">
