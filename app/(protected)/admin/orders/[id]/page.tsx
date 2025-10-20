@@ -266,10 +266,10 @@ export default function AdminOrderDetail() {
         <AdminNav active="Orders" />
       </div>
       
-      <div className="p-4 print:p-8 container">
+      <div className="p-4 print:p-8 container mb-[100px]">
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-center mb-6 print:hidden">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-2">
             <Button
               isIconOnly
               variant="light"

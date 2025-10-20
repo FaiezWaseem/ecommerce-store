@@ -179,7 +179,7 @@ export default function AdminHome() {
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 min-h-screen">
       <AdminNav active="Dashboard" />
-      <main className="lg:p-4 sm:p-6 lg:p-8">
+      <main className="lg:p-4 sm:p-6 lg:p-8 mb-5">
         {/* Header Section */}
         <div className="mb-8 p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

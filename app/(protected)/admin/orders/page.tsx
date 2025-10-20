@@ -187,13 +187,87 @@ export default function AdminOrders() {
             <hr className="mt-3" />
         </div>
         <div className="flex-1 space-y-4 p-2 lg:p-8 pt-6">
-            <DataTable
-                data={orders}
-                INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
-                renderCell={renderCell as any}
-                columns={columns}
-                searchKey="orderNumber"
-            />
+            {/* Mobile list layout */}
+            <div className="md:hidden">
+                {orders.length === 0 ? (
+                    <div className="text-center text-sm text-gray-500">No orders found.</div>
+                ) : (
+                    <div className="space-y-3 mb-[120px]">
+                        {orders.map((o) => {
+                            const customerName = `${o.user.firstName} ${o.user.lastName}`.trim();
+                            const statusColor = (statusColorMap as any)[o.status] || 'secondary';
+                            return (
+                                <div
+                                    key={o.id}
+                                    className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <p className="text-sm font-semibold text-default-900">Order #{o.orderNumber}</p>
+                                            <p className="text-xs text-default-500">{new Date(o.createdAt).toLocaleDateString()}</p>
+                                        </div>
+                                        <Chip className="capitalize" color={statusColor} size="sm" variant="flat">
+                                            {o.status.toLowerCase()}
+                                        </Chip>
+                                    </div>
+
+                                    <div className="mt-3">
+                                        <User
+                                            avatarProps={{ radius: "lg", name: customerName.charAt(0) }}
+                                            name={customerName}
+                                            description={o.user.email}
+                                        />
+                                    </div>
+
+                                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                                        <div>
+                                            <p className="text-gray-500">Items</p>
+                                            <p className="font-medium">{o.items.length}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-500">Total</p>
+                                            <p className="font-medium">Rs {o.totalAmount}</p>
+                                        </div>
+                                    </div>
+
+                                    {o.items.length > 0 && (
+                                        <div className="mt-3 flex gap-2 overflow-x-auto py-1">
+                                            {o.items.slice(0, 6).map((it) => (
+                                                <Image
+                                                    key={it.id}
+                                                    alt={it.product.name}
+                                                    src={it.product.images?.[0]?.url || "/placeholder.svg"}
+                                                    className="w-12 h-12 object-cover rounded-md"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <div className="mt-4 flex gap-2">
+                                        <Button size="sm" color="primary" onPress={() => handleViewOrder(o.id)}>
+                                            View
+                                        </Button>
+                                        <Button size="sm" variant="flat" onPress={() => handleViewOrder(o.id)}>
+                                            Edit
+                                        </Button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block">
+                <DataTable
+                    data={orders}
+                    INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
+                    renderCell={renderCell as any}
+                    columns={columns}
+                    searchKey="orderNumber"
+                />
+            </div>
         </div>
     </div>
 }

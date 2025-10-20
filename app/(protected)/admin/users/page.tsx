@@ -290,13 +290,85 @@ export default function AdminUsers() {
                         <div className="text-lg">Loading users...</div>
                     </div>
                 ) : (
-                    <DataTable 
-                        data={users}
-                        INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
-                        renderCell={renderCell}
-                        columns={columns}
-                        searchKey="email"
-                    />
+                    <>
+                        {/* Mobile list layout */}
+                        <div className="md:hidden">
+                            {users.length === 0 ? (
+                                <div className="text-center text-sm text-gray-500">No users found.</div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {users.map((u) => {
+                                        const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'N/A';
+                                        return (
+                                            <div
+                                                key={u.id}
+                                                className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <User
+                                                            avatarProps={{ radius: "lg", name: fullName.charAt(0) }}
+                                                            name={fullName}
+                                                            description={u.email}
+                                                        />
+                                                    </div>
+                                                    <Chip
+                                                        className="ml-2"
+                                                        size="sm"
+                                                        variant="flat"
+                                                        color={u.isActive ? 'success' : 'danger'}
+                                                    >
+                                                        {u.isActive ? 'Active' : 'Inactive'}
+                                                    </Chip>
+                                                </div>
+                                                <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                                                    <div>
+                                                        <p className="text-gray-500">Role</p>
+                                                        <p className="font-medium">{u.role}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-500">Created</p>
+                                                        <p className="font-medium">{new Date(u.createdAt).toLocaleDateString()}</p>
+                                                    </div>
+                                                    {u._count?.orders !== undefined && (
+                                                        <div>
+                                                            <p className="text-gray-500">Orders</p>
+                                                            <p className="font-medium">{u._count.orders}</p>
+                                                        </div>
+                                                    )}
+                                                    {u._count?.reviews !== undefined && (
+                                                        <div>
+                                                            <p className="text-gray-500">Reviews</p>
+                                                            <p className="font-medium">{u._count.reviews}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="mt-4 flex gap-2">
+                                                    <Button size="sm" color="primary" onPress={() => handleEdit(u)}>
+                                                        Edit
+                                                    </Button>
+                                                    <Button size="sm" color="danger" onPress={() => handleDelete(u)}>
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Desktop table */}
+                        <div className="hidden md:block">
+                            <DataTable 
+                                data={users}
+                                INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
+                                renderCell={renderCell}
+                                columns={columns}
+                                searchKey="email"
+                            />
+                        </div>
+                    </>
                 )}
             </div>
 

@@ -240,18 +240,106 @@ export default function AdminProducts() {
             <hr className="mt-3" />
         </div>
         <div className="flex-1 space-y-4 p-2 lg:p-8 pt-6">
-            <DataTable
-                data={products}
-                INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
-                renderCell={renderCell}
-                columns={columns}
-                searchKey="name"
-                onAddNewClick={() => {
-                    navigate.push('/admin/product/new')
-                }}
-                // loading={loading}
-                // onSearch={(search : any) => fetchProducts(1, search)}
-            />
+            <>
+                {/* Mobile list layout */}
+                <div className="md:hidden space-y-3 mb-5">
+                    <div className="flex justify-end">
+                        <Button size="sm" onPress={() => navigate.push('/admin/product/new')}>
+                            Add New
+                        </Button>
+                    </div>
+
+                    {loading ? (
+                        <div className="flex items-center justify-center h-40">
+                            <div className="text-sm text-muted-foreground">Loading products...</div>
+                        </div>
+                    ) : products.length === 0 ? (
+                        <div className="text-center text-sm text-gray-500">No products found</div>
+                    ) : (
+                        <ul className="space-y-3 mb-[120px]">
+                            {products.map((product) => {
+                                const imageUrl = product.images?.[0]?.url || 'https://placehold.co/100x100.png';
+                                const statusColor = (statusColorMap as any)[product.status] || 'secondary';
+                                const stockColor = (stockStatusColorMap as any)[product.stockStatus] || 'secondary';
+
+                                return (
+                                    <li key={product.id} className="p-4 rounded-lg border bg-white dark:bg-slate-800">
+                                        <div className="flex items-start gap-3">
+                                            <Image 
+                                                src={imageUrl} 
+                                                width={60} 
+                                                height={60} 
+                                                className="rounded-lg object-cover flex-shrink-0"
+                                                alt={product.name}
+                                            />
+                                            <div className="flex-1">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <h3 className="font-semibold text-base">{product.name}</h3>
+                                                        <p className="text-xs text-default-400">{product.slug}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Chip className="capitalize" color={statusColor} size="sm" variant="flat">
+                                                            {product.status.toLowerCase()}
+                                                        </Chip>
+                                                        <Chip className="capitalize" color={stockColor} size="sm" variant="flat">
+                                                            {product.stockStatus.replace('_', ' ').toLowerCase()}
+                                                        </Chip>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-2 text-xs text-muted-foreground">
+                                                    <span>Category: {product.category?.name || 'Uncategorized'}</span>
+                                                </div>
+                                                <div className="mt-1 text-sm">
+                                                    <span className="font-medium">Rs {product.regularPrice}</span>
+                                                    {product.salePrice && (
+                                                        <span className="ml-2 text-success">Rs {product.salePrice}</span>
+                                                    )}
+                                                </div>
+                                                <div className="mt-3 flex items-center gap-2">
+                                                    <Button size="sm" variant="solid" onPress={() => navigate.push(`/product/${product.slug}`)}>
+                                                        View
+                                                    </Button>
+                                                    <Button size="sm" variant="solid" onPress={() => navigate.push(`/admin/product/${product.id}/edit`)}>
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        color="danger"
+                                                        variant="flat"
+                                                        onPress={() => handleDelete(product.id)}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                                <div className="mt-2 text-xs text-default-400">
+                                                    Created: {new Date(product.createdAt).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </div>
+
+                {/* Desktop table layout */}
+                <div className="hidden md:block">
+                    <DataTable
+                        data={products}
+                        INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
+                        renderCell={renderCell}
+                        columns={columns}
+                        searchKey="name"
+                        onAddNewClick={() => {
+                            navigate.push('/admin/product/new')
+                        }}
+                        // loading={loading}
+                        // onSearch={(search : any) => fetchProducts(1, search)}
+                    />
+                </div>
+            </>
         </div>
 
     </div>

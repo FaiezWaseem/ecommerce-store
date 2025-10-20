@@ -189,16 +189,66 @@ export default function AdminCategory() {
                         <div className="text-lg">Loading categories...</div>
                     </div>
                 ) : (
-                    <DataTable
-                        renderCell={renderCell}
-                        data={categories}
-                        columns={columns}
-                        INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
-                        searchKey="name"
-                        onAddNewClick={() => {
-                            navigate.push('/admin/category/new')
-                        }}
-                    />
+                    <>
+                        {/* Mobile list layout */}
+                        <div className="md:hidden space-y-3 mb-[80px]">
+                            <div className="flex justify-end">
+                                <Button size="sm" onPress={() => navigate.push('/admin/category/new')}>
+                                    Add New
+                                </Button>
+                            </div>
+                            {categories.length === 0 ? (
+                                <div className="text-center text-sm text-gray-500">No categories found</div>
+                            ) : (
+                                <ul className="space-y-3">
+                                    {categories.map((category) => (
+                                        <li key={category.id} className="p-4 rounded-lg border bg-white dark:bg-slate-800">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <h3 className="font-semibold text-base">{category.name}</h3>
+                                                    {category.parent && (
+                                                        <p className="text-xs text-default-400">Parent: {category.parent.name}</p>
+                                                    )}
+                                                    <p className="mt-1 text-xs text-muted-foreground">Products: {category._count.products}</p>
+                                                </div>
+                                                <Chip className="capitalize" color={category.isActive ? 'success' : 'danger'} size="sm" variant="flat">
+                                                    {category.isActive ? 'Active' : 'Inactive'}
+                                                </Chip>
+                                            </div>
+                                            <div className="mt-3 flex items-center gap-2">
+                                                <Button size="sm" variant="solid" onPress={() => handleEdit(category.id)}>
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    color="danger"
+                                                    variant="flat"
+                                                    onPress={() => handleDelete(category.id)}
+                                                    isDisabled={deleting === category.id}
+                                                >
+                                                    {deleting === category.id ? 'Deleting...' : 'Delete'}
+                                                </Button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        {/* Desktop table layout */}
+                        <div className="hidden md:block">
+                            <DataTable
+                                renderCell={renderCell}
+                                data={categories}
+                                columns={columns}
+                                INITIAL_VISIBLE_COLUMNS={INITIAL_VISIBLE_COLUMNS}
+                                searchKey="name"
+                                onAddNewClick={() => {
+                                    navigate.push('/admin/category/new')
+                                }}
+                            />
+                        </div>
+                    </>
                 )}
             </div>
         </main>

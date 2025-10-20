@@ -887,33 +887,33 @@ export default function HomeSettingsPage() {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-7">
-          <TabsTrigger value="general" className="flex items-center gap-2">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 mb-5">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto">
+          <TabsTrigger value="general" className="flex items-center gap-2 w-full">
             <Settings className="w-4 h-4" />
             General
           </TabsTrigger>
-          <TabsTrigger value="carousel" className="flex items-center gap-2">
+          <TabsTrigger value="carousel" className="flex items-center gap-2 w-full">
             <ImageIcon className="w-4 h-4" />
             Carousel
           </TabsTrigger>
-          <TabsTrigger value="banners" className="flex items-center gap-2">
+          <TabsTrigger value="banners" className="flex items-center gap-2 w-full">
             <Sparkles className="w-4 h-4" />
             Banners
           </TabsTrigger>
-          <TabsTrigger value="featured" className="flex items-center gap-2">
+          <TabsTrigger value="featured" className="flex items-center gap-2 w-full">
             <Star className="w-4 h-4" />
             Featured
           </TabsTrigger>
-          <TabsTrigger value="new-arrival" className="flex items-center gap-2">
+          <TabsTrigger value="new-arrival" className="flex items-center gap-2 w-full">
             <Package className="w-4 h-4" />
             New Arrival
           </TabsTrigger>
-          <TabsTrigger value="messages" className="flex items-center gap-2">
+          <TabsTrigger value="messages" className="flex items-center gap-2 w-full">
             <Megaphone className="w-4 h-4" />
             Messages
           </TabsTrigger>
-          <TabsTrigger value="sales" className="flex items-center gap-2">
+          <TabsTrigger value="sales" className="flex items-center gap-2 w-full">
             <Percent className="w-4 h-4" />
             Sales
           </TabsTrigger>
@@ -1827,7 +1827,7 @@ export default function HomeSettingsPage() {
                 onChange={(e) => setHeadlineForm({ ...headlineForm, message: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="messageType">Message Type</Label>
                 <Select value={headlineForm.type} onValueChange={(value) => setHeadlineForm({ ...headlineForm, type: value as any })}>
@@ -1853,7 +1853,7 @@ export default function HomeSettingsPage() {
                 </Label>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="startDate">Start Date (Optional)</Label>
                 <Input
