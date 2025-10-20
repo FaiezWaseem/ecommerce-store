@@ -129,11 +129,7 @@ export default function AdminNav({ active }: AdminNavProps) {
 
         {/* Right-side: Notifications, Dark Mode & Profile */}
         <NavbarContent justify="end">
-          {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative p-2">
-            <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <Badge color="danger" size="sm" className="absolute -top-1 -right-1">5</Badge>
-          </Button>
+       
 
           <DarkModeSwitcher />
 

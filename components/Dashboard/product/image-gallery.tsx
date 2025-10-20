@@ -267,7 +267,7 @@ export default function ImageGallery({
                           objectFit="cover"
                         />
                         {image.selected && (
-                          <div className="absolute inset-0 bg-primary bg-opacity-20 flex items-center justify-center">
+                          <div className="absolute inset-0 bg-black/50 bg-opacity-20 flex items-center justify-center">
                             <Checkbox checked={true} />
                           </div>
                         )}
